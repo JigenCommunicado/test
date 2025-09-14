@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простое тестирование Express SmartApp</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .test-section { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .result { margin-top: 15px; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .links { text-align: center; margin: 30px 0; }
+        .links a { display: inline-block; margin: 10px; padding: 15px 30px; background: #4facfe; color: white; text-decoration: none; border-radius: 10px; }
+        .links a:hover { background: #3d8bfe; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Простое тестирование Express SmartApp</h1>
+        
+        <div class="links">
+            <a href="http://localhost:8080/index.html" target="_blank">🏠 Главная навигация (порт 8080)</a>
+            <a href="http://localhost:8080/flight_booking_ui.html" target="_blank">📱 Форма заявки (порт 8080)</a>
+            <a href="http://localhost:8080/admin_panel.html" target="_blank">🔧 Админ панель (порт 8080)</a>
+            <a href="http://localhost:5002/health" target="_blank">⚡ API Health Check (порт 5002)</a>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Тест Excel интеграции</h3>
+            <button class="btn btn-primary" onclick="testExcelIntegration()">Проверить Excel интеграцию</button>
+            <button class="btn btn-info" onclick="getStatistics()">Получить статистику</button>
+            <div id="excel-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Создать тестовую заявку</h3>
+            <button class="btn btn-success" onclick="createTestApplication()">Создать тестовую заявку</button>
+            <div id="application-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 API тесты</h3>
+            <button class="btn btn-primary" onclick="testAPI()">Тест всех API</button>
+            <button class="btn btn-info" onclick="testNewFeatures()">Тест новых функций</button>
+            <div id="api-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🗓️ Тест управления периодами</h3>
+            <button class="btn btn-primary" onclick="testPeriods()">Проверить периоды заявок</button>
+            <div id="periods-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Инструкции</h3>
+            <p><strong>Для тестирования:</strong></p>
+            <ol>
+                <li>Убедитесь, что серверы запущены: <code>./manage.sh</code></li>
+                <li>Откройте <a href="http://localhost:8080/index.html" target="_blank">Главную навигацию</a> для доступа ко всем функциям</li>
+                <li>Используйте кнопки на этой странице для тестирования API</li>
+                <li>Откройте <a href="http://localhost:8080/admin_panel.html" target="_blank">Админ панель</a> для управления системой</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        async function testExcelIntegration() {
+            try {
+                const response = await fetch('http://localhost:5002/api/statistics');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('excel-result', `✅ Excel интеграция работает!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult('excel-result', `❌ Ошибка: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('excel-result', `❌ Ошибка: ${error.message}<br><br>Убедитесь, что Flask сервер запущен на порту 5002`, 'error');
+            }
+        }
+
+        async function getStatistics() {
+            try {
+                const response = await fetch('http://localhost:5002/api/statistics');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const stats = data.statistics;
+                    let statsText = 'Статистика заявок:\n';
+                    for (const [oke, count] of Object.entries(stats)) {
+                        statsText += `${oke}: ${count} заявок\n`;
+                    }
+                    showResult('excel-result', `📊 Статистика получена:<br><pre>${statsText}</pre>`, 'info');
+                } else {
+                    showResult('excel-result', `❌ Ошибка: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('excel-result', `❌ Ошибка: ${error.message}<br><br>Убедитесь, что Flask сервер запущен на порту 5002`, 'error');
+            }
+        }
+
+        async function createTestApplication() {
+            try {
+                // Создаем тестовую заявку через новый API
+                const applicationData = {
+                    user_id: 'test_' + Date.now(),
+                    location: 'Москва',
+                    oke: 'ОКЭ 1',
+                    date: '2025-09-20',
+                    position: 'БП',
+                    fio: 'Тест Тест Тестович',
+                    tab_num: '123456',
+                    direction: 'Санкт-Петербург',
+                    wishes: 'Тестовая заявка через API'
+                };
+
+                const response = await fetch('http://localhost:5002/api/application', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(applicationData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('application-result', `✅ Тестовая заявка создана успешно!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult('application-result', `❌ Ошибка: ${data.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showResult('application-result', `❌ Ошибка: ${error.message}<br><br>Убедитесь, что Flask сервер запущен на порту 5002`, 'error');
+            }
+        }
+
+        async function testAPI() {
+            const endpoints = [
+                { name: 'Flask Health', url: 'http://localhost:5002/health', method: 'GET' },
+                { name: 'Flask Statistics', url: 'http://localhost:5002/api/statistics', method: 'GET' },
+                { name: 'Flask Main Page', url: 'http://localhost:5002/', method: 'GET' },
+                { name: 'Static Server', url: 'http://localhost:8080/', method: 'GET' },
+                { name: 'Flight Booking UI', url: 'http://localhost:8080/flight_booking_ui.html', method: 'GET' },
+                { name: 'Admin Panel', url: 'http://localhost:8080/admin_panel.html', method: 'GET' }
+            ];
+
+            let result = 'Тест API endpoints:\n';
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, { method: endpoint.method });
+                    if (response.ok) {
+                        result += `✅ ${endpoint.name}: OK (${response.status})\n`;
+                    } else {
+                        result += `❌ ${endpoint.name}: Failed (${response.status})\n`;
+                    }
+                } catch (error) {
+                    result += `❌ ${endpoint.name}: Error - ${error.message}\n`;
+                }
+            }
+            
+            showResult('api-result', `<pre>${result}</pre>`, 'info');
+        }
+
+        async function testNewFeatures() {
+            const features = [
+                { name: 'Управление периодами', url: 'http://localhost:8080/application_periods.html' },
+                { name: 'Поиск заявок', url: 'http://localhost:8080/search_interface.html' },
+                { name: 'Уведомления', url: 'http://localhost:8080/notifications.html' },
+                { name: 'Мобильная версия', url: 'http://localhost:8080/mobile_booking_ui.html' }
+            ];
+
+            let result = 'Тест новых функций:\n';
+            
+            for (const feature of features) {
+                try {
+                    const response = await fetch(feature.url, { method: 'GET' });
+                    if (response.ok) {
+                        result += `✅ ${feature.name}: Доступна\n`;
+                    } else {
+                        result += `❌ ${feature.name}: Недоступна (${response.status})\n`;
+                    }
+                } catch (error) {
+                    result += `❌ ${feature.name}: Ошибка - ${error.message}\n`;
+                }
+            }
+            
+            showResult('api-result', `<pre>${result}</pre>`, 'info');
+        }
+
+        async function testPeriods() {
+            try {
+                const response = await fetch('http://localhost:5002/api/application-periods');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('periods-result', `✅ API периодов работает!<br><pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                } else {
+                    showResult('periods-result', `❌ Ошибка: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('periods-result', `❌ Ошибка: ${error.message}<br><br>Убедитесь, что Flask сервер запущен на порту 5002`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление периодами заявок - Express SmartApp</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a6fd8;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+            --dark-bg: #1a1a1a;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --shadow-hover: 0 5px 20px rgba(0,0,0,0.15);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --light-bg: #1a1a1a;
+            --dark-bg: #2d2d2d;
+            --card-bg: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .periods-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .period-item {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .period-item:hover {
+            transform: translateX(5px);
+        }
+
+        .period-item.active {
+            border-left-color: var(--success-color);
+        }
+
+        .period-item.inactive {
+            border-left-color: var(--danger-color);
+            opacity: 0.7;
+        }
+
+        .period-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .period-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .period-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .period-dates {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .period-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .period-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            color: white;
+        }
+
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switcher">
+        <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🗓️ Управление периодами заявок</h1>
+            <p>Настройте периоды подачи заявок на корпоративные рейсы</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>➕ Создать новый период</h2>
+                <form id="periodForm">
+                    <div class="form-group">
+                        <label for="periodName">Название периода</label>
+                        <input type="text" id="periodName" name="name" required placeholder="Например: Сентябрь 2025">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="startDate">Дата начала</label>
+                        <input type="date" id="startDate" name="start_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endDate">Дата окончания</label>
+                        <input type="date" id="endDate" name="end_date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Описание</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Дополнительная информация о периоде"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isActive" name="is_active" checked> 
+                            Период активен
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Создать период</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📋 Список периодов</h2>
+                <div class="periods-list" id="periodsList">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                        Загрузка периодов...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Переключение темы
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Загрузка темы
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+        }
+
+        // Загрузка периодов
+        async function loadPeriods() {
+            try {
+                const response = await fetch('http://localhost:5002/api/application-periods', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayPeriods(data.periods);
+                } else {
+                    console.error('Ошибка загрузки периодов');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки периодов:', error);
+            }
+        }
+
+        // Отображение периодов
+        function displayPeriods(periods) {
+            const container = document.getElementById('periodsList');
+            
+            if (periods.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Периоды не найдены</p>';
+                return;
+            }
+
+            container.innerHTML = periods.map(period => `
+                <div class="period-item ${period.is_active ? 'active' : 'inactive'}">
+                    <div class="period-header">
+                        <div class="period-name">${period.name}</div>
+                        <div class="period-status ${period.is_active ? 'status-active' : 'status-inactive'}">
+                            ${period.is_active ? 'Активен' : 'Неактивен'}
+                        </div>
+                    </div>
+                    <div class="period-dates">
+                        📅 ${new Date(period.start_date).toLocaleDateString('ru-RU')} - ${new Date(period.end_date).toLocaleDateString('ru-RU')}
+                    </div>
+                    ${period.description ? `<div class="period-description">${period.description}</div>` : ''}
+                    <div class="period-actions">
+                        <button class="btn btn-sm btn-primary" onclick="editPeriod('${period.period_id}')">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePeriod('${period.period_id}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Создание периода
+        document.getElementById('periodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                start_date: formData.get('start_date'),
+                end_date: formData.get('end_date'),
+                description: formData.get('description'),
+                is_active: formData.get('is_active') === 'on'
+            };
+
+            try {
+                const response = await fetch('http://localhost:5002/api/application-periods', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('Период успешно создан!');
+                    e.target.reset();
+                    loadPeriods();
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка создания периода: ' + error.error);
+                }
+            } catch (error) {
+                alert('Ошибка создания периода: ' + error.message);
+            }
+        });
+
+        // Удаление периода
+        async function deletePeriod(periodId) {
+            if (!confirm('Вы уверены, что хотите удалить этот период?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5002/api/application-periods/${periodId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Период успешно удален!');
+                    loadPeriods();
+                } else {
+                    alert('Ошибка удаления периода');
+                }
+            } catch (error) {
+                alert('Ошибка удаления периода: ' + error.message);
+            }
+        }
+
+        // Редактирование периода
+        function editPeriod(periodId) {
+            // TODO: Реализовать редактирование
+            alert('Функция редактирования будет добавлена позже');
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadPeriods();
+        });
+    </script>
+</body>
+</html>
+

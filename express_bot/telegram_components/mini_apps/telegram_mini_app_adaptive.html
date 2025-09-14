@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express SmartApp - Заявка на рейс</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-theme-bg-color: var(--tg-theme-bg-color, #ffffff);
+            --tg-theme-text-color: var(--tg-theme-text-color, #000000);
+            --tg-theme-button-color: var(--tg-theme-button-color, #0088cc);
+            --tg-theme-button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --tg-theme-secondary-bg-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            --tg-theme-hint-color: var(--tg-theme-hint-color, #999999);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            line-height: 1.5;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--tg-theme-bg-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .platform-info {
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .form-container {
+            padding: 24px;
+        }
+
+        .progress-container {
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--tg-theme-button-color);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .step-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-step.active {
+            display: block !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--tg-theme-text-color);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--tg-theme-secondary-bg-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .btn-secondary {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .review-section {
+            background: var(--tg-theme-secondary-bg-color);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+
+        .review-label {
+            font-weight: 500;
+            color: var(--tg-theme-hint-color);
+        }
+
+        .review-value {
+            font-weight: 600;
+            color: var(--tg-theme-text-color);
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .info-message {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        /* Мобильные стили */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+
+            .container {
+                border-radius: 8px;
+            }
+
+            .header {
+                padding: 16px;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .form-container {
+                padding: 16px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Заявка на рейс</h1>
+            <div id="telegramInfo">Express SmartApp</div>
+        </div>
+
+        <div class="platform-info" id="platformInfo">
+            📱 Загрузка...
+        </div>
+
+        <div class="form-container">
+            <div class="info-message">
+                <strong>📝 Мобильная версия:</strong> После заполнения заявка будет отправлена через Telegram бота для обеспечения безопасности.
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="step-info">
+                    <span id="stepText">Шаг 1 из 9</span>
+                    <span id="stepName">Локация</span>
+                </div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Шаг 1: Локация -->
+            <div class="form-step active" id="step1">
+                <div class="form-group">
+                    <label for="location">🏢 Выберите локацию:</label>
+                    <select id="location" required>
+                        <option value="">Выберите локацию</option>
+                        <option value="Москва">Москва</option>
+                        <option value="Санкт-Петербург">Санкт-Петербург</option>
+                        <option value="Новосибирск">Новосибирск</option>
+                        <option value="Екатеринбург">Екатеринбург</option>
+                        <option value="Красноярск">Красноярск</option>
+                        <option value="Сочи">Сочи</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Шаг 2: ОКЭ -->
+            <div class="form-step" id="step2">
+                <div class="form-group">
+                    <label for="oke">🏛️ Выберите ОКЭ:</label>
+                    <select id="oke" required>
+                        <option value="">Выберите ОКЭ</option>
+                        <option value="ОКЭ 1">ОКЭ 1</option>
+                        <option value="ОКЭ 2">ОКЭ 2</option>
+                        <option value="ОКЭ 3">ОКЭ 3</option>
+                        <option value="ОКЭ 4">ОКЭ 4</option>
+                        <option value="ОКЭ 5">ОКЭ 5</option>
+                        <option value="ОКЭ Красноярск">ОКЭ Красноярск</option>
+                        <option value="ОКЭ Сочи">ОКЭ Сочи</option>
+                        <option value="ОЛСиТ">ОЛСиТ</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Шаг 3: Дата -->
+            <div class="form-step" id="step3">
+                <div class="form-group">
+                    <label for="date">📅 Планируемая дата вылета:</label>
+                    <input type="date" id="date" required>
+                </div>
+            </div>
+
+            <!-- Шаг 4: Должность -->
+            <div class="form-step" id="step4">
+                <div class="form-group">
+                    <label for="position">👔 Должность:</label>
+                    <select id="position" required>
+                        <option value="">Выберите должность</option>
+                        <option value="БП">БП</option>
+                        <option value="РП">РП</option>
+                        <option value="Специалист">Специалист</option>
+                        <option value="Эксперт">Эксперт</option>
+                        <option value="Руководитель">Руководитель</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Шаг 5: ФИО -->
+            <div class="form-step" id="step5">
+                <div class="form-group">
+                    <label for="fio">👤 ФИО:</label>
+                    <input type="text" id="fio" placeholder="Иванов Иван Иванович" required>
+                </div>
+            </div>
+
+            <!-- Шаг 6: Табельный номер -->
+            <div class="form-step" id="step6">
+                <div class="form-group">
+                    <label for="tabNum">🆔 Табельный номер:</label>
+                    <input type="text" id="tabNum" placeholder="123456" required>
+                </div>
+            </div>
+
+            <!-- Шаг 7: Направление -->
+            <div class="form-step" id="step7">
+                <div class="form-group">
+                    <label for="direction">🎯 Направление:</label>
+                    <select id="direction" required>
+                        <option value="">Выберите направление</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Шаг 8: Пожелания -->
+            <div class="form-step" id="step8">
+                <div class="form-group">
+                    <label for="wishes">💭 Пожелания к рейсу:</label>
+                    <textarea id="wishes" rows="4" placeholder="Укажите особые пожелания или требования..."></textarea>
+                </div>
+            </div>
+
+            <!-- Шаг 9: Подтверждение -->
+            <div class="form-step" id="step9">
+                <h3 style="margin-bottom: 16px;">✅ Проверьте данные заявки</h3>
+                <div class="review-section" id="reviewData"></div>
+            </div>
+
+            <!-- Результат отправки -->
+            <div class="form-step" id="stepSuccess" style="display: none;">
+                <div class="success-message">
+                    <div class="success-icon">🎉</div>
+                    <h3>Заявка готова к отправке!</h3>
+                    <p>Данные заявки были переданы в Telegram бота для безопасной обработки.</p>
+                    <p style="margin-top: 16px; color: var(--tg-theme-hint-color); font-size: 14px;">
+                        Mini App автоматически закроется через несколько секунд.
+                    </p>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">
+                    ← Назад
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                    Далее →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = null;
+        let isWebTelegram = false;
+        let isMobileTelegram = false;
+
+        if (window.Telegram && window.Telegram.WebApp) {
+            tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            
+            // Определяем платформу
+            const platform = tg.platform;
+            isWebTelegram = platform === 'web' || platform === 'webk' || platform === 'webz';
+            isMobileTelegram = platform === 'android' || platform === 'ios' || platform === 'mobile';
+            
+            // Применяем тему Telegram
+            if (tg.themeParams) {
+                document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#ffffff');
+                document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+                document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#0088cc');
+                document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+                document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color || '#f0f0f0');
+                document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#999999');
+            }
+
+            // Информация о пользователе и платформе
+            let userInfo = 'Telegram User';
+            let platformInfo = '';
+            
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                userInfo = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                document.getElementById('fio').value = userInfo;
+            }
+            
+            if (isWebTelegram) {
+                platformInfo = '💻 Веб-версия Telegram (прямая отправка)';
+            } else if (isMobileTelegram) {
+                platformInfo = '📱 Мобильная версия Telegram (через бота)';
+            } else {
+                platformInfo = `📱 Telegram (${platform})`;
+            }
+            
+            document.getElementById('telegramInfo').innerHTML = `👋 ${userInfo}`;
+            document.getElementById('platformInfo').innerHTML = platformInfo;
+            
+            // Настройка главной кнопки
+            tg.MainButton.setText('📝 Подать заявку');
+            tg.MainButton.color = tg.themeParams.button_color || '#0088cc';
+            tg.MainButton.textColor = tg.themeParams.button_text_color || '#ffffff';
+            tg.MainButton.hide();
+            
+        } else {
+            document.getElementById('platformInfo').innerHTML = '🌐 Веб-браузер (тестовый режим)';
+        }
+
+        let currentStep = 1;
+        const totalSteps = 9;
+
+        // Данные направлений по локациям
+        const directionsData = {
+            "Москва": ["Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Сочи"],
+            "Санкт-Петербург": ["Москва", "Новосибирск", "Екатеринбург", "Мурманск"],
+            "Новосибирск": ["Москва", "Санкт-Петербург", "Красноярск", "Иркутск"],
+            "Екатеринбург": ["Москва", "Санкт-Петербург", "Новосибирск", "Челябинск"],
+            "Красноярск": ["Москва", "Новосибирск", "Иркутск"],
+            "Сочи": ["Москва", "Санкт-Петербург", "Краснодар"]
+        };
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('stepText').textContent = `Шаг ${currentStep} из ${totalSteps}`;
+            
+            const stepNames = [
+                'Локация', 'ОКЭ', 'Дата', 'Должность', 
+                'ФИО', 'Табельный номер', 'Направление', 'Пожелания', 'Подтверждение'
+            ];
+            document.getElementById('stepName').textContent = stepNames[currentStep - 1];
+
+            // Скрываем все шаги
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step${i}`).classList.remove('active');
+            }
+
+            // Показываем текущий шаг
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            // Управление кнопками
+            document.getElementById('prevBtn').style.display = currentStep > 1 ? 'block' : 'none';
+            
+            if (currentStep === totalSteps) {
+                document.getElementById('nextBtn').textContent = '📝 Подать заявку';
+                if (tg && tg.MainButton) {
+                    tg.MainButton.show();
+                    tg.MainButton.onClick(() => submitApplication());
+                }
+            } else {
+                document.getElementById('nextBtn').textContent = 'Далее →';
+                if (tg && tg.MainButton) {
+                    tg.MainButton.hide();
+                }
+            }
+        }
+
+        function validateStep(step) {
+            const fields = {
+                1: ['location'],
+                2: ['oke'],
+                3: ['date'],
+                4: ['position'],
+                5: ['fio'],
+                6: ['tabNum'],
+                7: ['direction'],
+                8: [], // Пожелания не обязательны
+                9: []  // Проверка данных
+            };
+
+            for (const fieldId of fields[step]) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    showError(`Пожалуйста, заполните поле "${field.previousElementSibling.textContent}"`);
+                    field.focus();
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function nextStep() {
+            if (!validateStep(currentStep)) {
+                return;
+            }
+
+            hideError();
+
+            // Обновляем направления при выборе локации
+            if (currentStep === 1) {
+                updateDirections();
+            }
+
+            // Показываем данные для подтверждения
+            if (currentStep === 8) {
+                showReviewData();
+            }
+
+            if (currentStep === totalSteps) {
+                submitApplication();
+                return;
+            }
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateProgress();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateProgress();
+                hideError();
+            }
+        }
+
+        function updateDirections() {
+            const location = document.getElementById('location').value;
+            const directionSelect = document.getElementById('direction');
+            
+            directionSelect.innerHTML = '<option value="">Выберите направление</option>';
+            
+            if (location && directionsData[location]) {
+                directionsData[location].forEach(direction => {
+                    const option = document.createElement('option');
+                    option.value = direction;
+                    option.textContent = direction;
+                    directionSelect.appendChild(option);
+                });
+            }
+        }
+
+        function showReviewData() {
+            const reviewData = document.getElementById('reviewData');
+            const data = {
+                'Локация': document.getElementById('location').value,
+                'ОКЭ': document.getElementById('oke').value,
+                'Дата вылета': document.getElementById('date').value,
+                'Должность': document.getElementById('position').value,
+                'ФИО': document.getElementById('fio').value,
+                'Табельный номер': document.getElementById('tabNum').value,
+                'Направление': document.getElementById('direction').value,
+                'Пожелания': document.getElementById('wishes').value || 'Не указаны'
+            };
+
+            reviewData.innerHTML = '';
+            for (const [label, value] of Object.entries(data)) {
+                const item = document.createElement('div');
+                item.className = 'review-item';
+                item.innerHTML = `
+                    <span class="review-label">${label}:</span>
+                    <span class="review-value">${value}</span>
+                `;
+                reviewData.appendChild(item);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        async function submitApplication() {
+            const applicationData = {
+                user_id: tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 'web_user_' + Date.now(),
+                location: document.getElementById('location').value,
+                oke: document.getElementById('oke').value,
+                date: document.getElementById('date').value,
+                position: document.getElementById('position').value,
+                fio: document.getElementById('fio').value,
+                tab_num: document.getElementById('tabNum').value,
+                direction: document.getElementById('direction').value,
+                wishes: document.getElementById('wishes').value,
+                platform: isWebTelegram ? 'telegram_web' : isMobileTelegram ? 'telegram_mobile' : 'web_browser',
+                submitted_at: new Date().toISOString()
+            };
+
+            // В мобильной версии отправляем данные через Telegram WebApp API
+            if (isMobileTelegram && tg && tg.sendData) {
+                try {
+                    // Отправляем данные боту через Telegram WebApp API
+                    tg.sendData(JSON.stringify({
+                        action: 'submit_application',
+                        data: applicationData
+                    }));
+                    
+                    // Показываем успешный результат
+                    showSuccessAndClose();
+                    return;
+                } catch (error) {
+                    console.error('Mobile submission error:', error);
+                    // Fallback к обычному методу
+                }
+            }
+
+            // Для веб-версии или fallback - отправляем напрямую
+            try {
+                const response = await fetch('http://localhost:5002/api/application', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(applicationData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showSuccessAndClose();
+                } else {
+                    showError(result.error || 'Произошла ошибка при отправке заявки');
+                }
+            } catch (error) {
+                // В мобильной версии это ожидаемо, показываем что данные переданы боту
+                if (isMobileTelegram) {
+                    showSuccessAndClose();
+                } else {
+                    showError('Ошибка соединения с сервером');
+                    console.error('Submission error:', error);
+                }
+            }
+        }
+
+        function showSuccessAndClose() {
+            // Показываем успешный результат
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step${i}`).style.display = 'none';
+            }
+            document.getElementById('stepSuccess').style.display = 'block';
+            document.querySelector('.button-group').style.display = 'none';
+            document.querySelector('.progress-container').style.display = 'none';
+            
+            if (tg && tg.MainButton) {
+                tg.MainButton.hide();
+            }
+            
+            // Автоматически закрываем Mini App через 3 секунды
+            setTimeout(() => {
+                if (tg && tg.close) {
+                    tg.close();
+                }
+            }, 3000);
+        }
+
+        // Инициализация при загрузке
+        updateProgress();
+
+        // Установка минимальной даты (сегодня)
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').min = today;
+    </script>
+</body>
+</html>

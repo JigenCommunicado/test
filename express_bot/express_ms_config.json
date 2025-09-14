@@ -1,0 +1,53 @@
+{
+  "smartapp": {
+    "name": "Flight Booking Bot",
+    "description": "Бот для подачи заявок на командировочные рейсы",
+    "version": "1.0.0",
+    "icon": "✈️",
+    "color": "#0088cc",
+    "author": "Express Bot Team",
+    "bot_id": "00c46d64-1127-5a96-812d-3d8b27c58b99",
+    "webhook_url": "https://comparing-doom-solving-royalty.trycloudflare.com:5010/webhook",
+    "base_url": "https://comparing-doom-solving-royalty.trycloudflare.com:5010",
+    "manifest_url": "https://comparing-doom-solving-royalty.trycloudflare.com:5010/manifest",
+    "admin_url": "https://comparing-doom-solving-royalty.trycloudflare.com:5010/admin",
+    "permissions": [
+      "read_messages",
+      "send_messages",
+      "read_user_info",
+      "access_files"
+    ],
+    "commands": [
+      {
+        "command": "/start",
+        "description": "Начать работу с ботом"
+      },
+      {
+        "command": "/help",
+        "description": "Справка"
+      },
+      {
+        "command": "/new",
+        "description": "Подать новую заявку на рейс"
+      }
+    ],
+    "endpoints": {
+      "webhook": "/webhook",
+      "health": "/health",
+      "manifest": "/manifest",
+      "admin": "/admin"
+    }
+  },
+  "express_ms_settings": {
+    "bot_id": "00c46d64-1127-5a96-812d-3d8b27c58b99",
+    "secret_key": "a75b4cd97d9e88e543f077178b2d5a4f",
+    "webhook_url": "https://comparing-doom-solving-royalty.trycloudflare.com:5010/webhook",
+    "api_base_url": "https://api.express.ms",
+    "registration_required": true,
+    "webhook_events": [
+      "message",
+      "command",
+      "callback_query"
+    ]
+  }
+}

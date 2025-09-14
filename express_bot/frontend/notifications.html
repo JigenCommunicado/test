@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уведомления - SmartApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .notifications-container {
+            padding: 30px;
+        }
+
+        .notification-item {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .notification-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .notification-item.unread {
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+        }
+
+        .notification-item.read {
+            opacity: 0.7;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .notification-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .notification-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .type-application_open {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .type-application_closing_soon {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .type-application_closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .type-application_reminder {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .type-system_announcement {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .notification-message {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .notification-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 2px solid #e1e5e9;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .filter-tab.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-tab:hover {
+            border-color: #667eea;
+        }
+
+        .push-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 20px;
+            max-width: 350px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+
+        .push-notification.show {
+            transform: translateX(0);
+        }
+
+        .push-notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .push-notification-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .push-notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .push-notification-message {
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .notification-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .notification-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Уведомления</h1>
+            <p>Получайте уведомления о статусе приема заявок</p>
+        </div>
+
+        <div class="controls">
+            <div>
+                <button class="btn btn-primary" onclick="requestNotificationPermission()">
+                    🔔 Включить уведомления
+                </button>
+                <button class="btn btn-success" onclick="loadNotifications()">
+                    🔄 Обновить
+                </button>
+                <button class="btn btn-warning" onclick="markAllAsRead()">
+                    ✅ Отметить все как прочитанные
+                </button>
+            </div>
+            <div>
+                <span id="notificationStatus">Уведомления отключены</span>
+            </div>
+        </div>
+
+        <div class="notifications-container">
+            <!-- Статистика -->
+            <div class="stats" id="statsContainer">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalNotifications">0</div>
+                    <div class="stat-label">Всего уведомлений</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unreadNotifications">0</div>
+                    <div class="stat-label">Непрочитанных</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activePeriods">0</div>
+                    <div class="stat-label">Активных периодов</div>
+                </div>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="filter-tabs">
+                <div class="filter-tab active" onclick="setFilter('all')">Все</div>
+                <div class="filter-tab" onclick="setFilter('unread')">Непрочитанные</div>
+                <div class="filter-tab" onclick="setFilter('application_open')">Начало приема</div>
+                <div class="filter-tab" onclick="setFilter('application_closing_soon')">Скоро окончание</div>
+                <div class="filter-tab" onclick="setFilter('application_closed')">Прием завершен</div>
+            </div>
+
+            <!-- Список уведомлений -->
+            <div id="notificationsList" class="loading">
+                Загрузка уведомлений...
+            </div>
+        </div>
+    </div>
+
+    <!-- Push-уведомление -->
+    <div id="pushNotification" class="push-notification">
+        <div class="push-notification-header">
+            <div class="push-notification-title" id="pushTitle"></div>
+            <button class="push-notification-close" onclick="hidePushNotification()">×</button>
+        </div>
+        <div class="push-notification-message" id="pushMessage"></div>
+    </div>
+
+    <script>
+        const SMARTAPP_URL = 'http://localhost:5002';
+        let authToken = null;
+        let currentFilter = 'all';
+        let notificationWorker = null;
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем сохраненный токен
+            authToken = localStorage.getItem('auth_token');
+            if (authToken) {
+                loadNotifications();
+                loadStats();
+                startNotificationWorker();
+            } else {
+                showLoginPrompt();
+            }
+        });
+
+        // Показ запроса на вход
+        function showLoginPrompt() {
+            document.getElementById('notificationsList').innerHTML = `
+                <div class="empty-state">
+                    <h3>🔐 Требуется авторизация</h3>
+                    <p>Для просмотра уведомлений необходимо войти в систему</p>
+                    <a href="admin_panel.html" class="btn btn-primary">Войти</a>
+                </div>
+            `;
+        }
+
+        // Запрос разрешения на уведомления
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                alert('Браузер не поддерживает уведомления');
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                await subscribeToNotifications();
+                return;
+            }
+
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    await subscribeToNotifications();
+                } else {
+                    alert('Разрешение на уведомления отклонено');
+                }
+            } else {
+                alert('Уведомления заблокированы. Разрешите их в настройках браузера');
+            }
+        }
+
+        // Подписка на уведомления
+        async function subscribeToNotifications() {
+            if (!('serviceWorker' in navigator)) {
+                console.log('Service Worker не поддерживается');
+                return;
+            }
+
+            try {
+                // Регистрируем Service Worker
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker зарегистрирован:', registration);
+
+                // Подписываемся на push-уведомления
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: 'BEl62iUYgUivxIkv69yViEuiBIa40HIp8Vq2H5Q2Yj8'
+                });
+
+                // Отправляем подписку на сервер
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        subscription_id: JSON.stringify(subscription)
+                    })
+                });
+
+                if (response.ok) {
+                    updateNotificationStatus('Уведомления включены');
+                    showPushNotification('Уведомления включены', 'Вы будете получать уведомления о статусе приема заявок');
+                } else {
+                    console.error('Ошибка подписки на уведомления');
+                }
+            } catch (error) {
+                console.error('Ошибка подписки на уведомления:', error);
+            }
+        }
+
+        // Загрузка уведомлений
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications?unread_only=false`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        displayNotifications(data.notifications);
+                    }
+                } else if (response.status === 401) {
+                    showLoginPrompt();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки уведомлений:', error);
+                document.getElementById('notificationsList').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Ошибка загрузки</h3>
+                        <p>Не удалось загрузить уведомления</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Отображение уведомлений
+        function displayNotifications(notifications) {
+            const container = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📭 Нет уведомлений</h3>
+                        <p>У вас пока нет уведомлений</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Фильтруем уведомления
+            let filteredNotifications = notifications;
+            if (currentFilter === 'unread') {
+                filteredNotifications = notifications.filter(n => n.status === 'pending');
+            } else if (currentFilter !== 'all') {
+                filteredNotifications = notifications.filter(n => n.type === currentFilter);
+            }
+
+            let html = '';
+            filteredNotifications.forEach(notif => {
+                const isUnread = notif.status === 'pending';
+                const typeClass = `type-${notif.type}`;
+                const createdDate = new Date(notif.created_at).toLocaleString('ru-RU');
+                
+                html += `
+                    <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-id="${notif.id}">
+                        ${isUnread ? '<div class="notification-badge">!</div>' : ''}
+                        <div class="notification-header">
+                            <div>
+                                <div class="notification-title">${notif.title}</div>
+                                <div class="notification-type ${typeClass}">${getTypeLabel(notif.type)}</div>
+                            </div>
+                        </div>
+                        <div class="notification-message">${notif.message}</div>
+                        <div class="notification-meta">
+                            <span>${createdDate}</span>
+                            <div class="notification-actions">
+                                ${isUnread ? `<button class="btn btn-primary" onclick="markAsRead('${notif.id}')">Отметить как прочитанное</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Получение метки типа уведомления
+        function getTypeLabel(type) {
+            const labels = {
+                'application_open': 'Начало приема',
+                'application_closing_soon': 'Скоро окончание',
+                'application_closed': 'Прием завершен',
+                'application_reminder': 'Напоминание',
+                'system_announcement': 'Объявление'
+            };
+            return labels[type] || type;
+        }
+
+        // Отметка уведомления как прочитанного
+        async function markAsRead(notificationId) {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Обновляем UI
+                    const item = document.querySelector(`[data-id="${notificationId}"]`);
+                    if (item) {
+                        item.classList.remove('unread');
+                        item.classList.add('read');
+                        item.querySelector('.notification-badge')?.remove();
+                        item.querySelector('.notification-actions').innerHTML = '';
+                    }
+                    loadStats();
+                }
+            } catch (error) {
+                console.error('Ошибка отметки уведомления как прочитанного:', error);
+            }
+        }
+
+        // Отметка всех уведомлений как прочитанных
+        async function markAllAsRead() {
+            try {
+                const notifications = document.querySelectorAll('.notification-item.unread');
+                for (const item of notifications) {
+                    const notificationId = item.dataset.id;
+                    await markAsRead(notificationId);
+                }
+                loadNotifications();
+            } catch (error) {
+                console.error('Ошибка отметки всех уведомлений:', error);
+            }
+        }
+
+        // Загрузка статистики
+        async function loadStats() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('totalNotifications').textContent = data.stats.total;
+                        document.getElementById('unreadNotifications').textContent = data.stats.pending;
+                    }
+                }
+
+                // Загружаем активные периоды
+                const periodsResponse = await fetch(`${SMARTAPP_URL}/api/notifications/periods`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (periodsResponse.ok) {
+                    const periodsData = await periodsResponse.json();
+                    if (periodsData.success) {
+                        document.getElementById('activePeriods').textContent = periodsData.periods.length;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        // Установка фильтра
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Обновляем активную вкладку
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadNotifications();
+        }
+
+        // Запуск воркера для проверки новых уведомлений
+        function startNotificationWorker() {
+            if (notificationWorker) {
+                clearInterval(notificationWorker);
+            }
+            
+            notificationWorker = setInterval(() => {
+                loadNotifications();
+                loadStats();
+            }, 30000); // Проверяем каждые 30 секунд
+        }
+
+        // Показ push-уведомления
+        function showPushNotification(title, message) {
+            document.getElementById('pushTitle').textContent = title;
+            document.getElementById('pushMessage').textContent = message;
+            document.getElementById('pushNotification').classList.add('show');
+            
+            setTimeout(() => {
+                hidePushNotification();
+            }, 5000);
+        }
+
+        // Скрытие push-уведомления
+        function hidePushNotification() {
+            document.getElementById('pushNotification').classList.remove('show');
+        }
+
+        // Обновление статуса уведомлений
+        function updateNotificationStatus(status) {
+            document.getElementById('notificationStatus').textContent = status;
+        }
+
+        // Обработка входящих push-уведомлений
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'NOTIFICATION') {
+                    showPushNotification(event.data.title, event.data.message);
+                    loadNotifications();
+                    loadStats();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,35 @@
+{
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+  "executionEnvironments": [
+    {
+      "root": "/root/test/express_bot",
+      "pythonVersion": "3.12",
+      "pythonPlatform": "Linux",
+      "pythonPath": "/root/test/express_bot/venv/bin/python3",
+      "extraPaths": [
+        "/root/test/express_bot/backend",
+        "/root/test/express_bot/venv/lib/python3.12/site-packages"
+      ]
+    }
+  ],
+  "include": [
+    "**/*.py"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.git",
+    "**/venv"
+  ],
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "none",
+  "reportOptionalMemberAccess": "warning",
+  "reportOptionalSubscript": "warning",
+  "reportGeneralTypeIssues": "warning",
+  "extraPaths": [
+    "/root/test/express_bot/backend",
+    "/root/test/express_bot/venv/lib/python3.12/site-packages"
+  ],
+  "pythonPath": "/root/test/express_bot/venv/bin/python3"
+}

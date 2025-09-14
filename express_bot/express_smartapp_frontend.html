@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express SmartApp - Заявки на рейсы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 16px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .menu-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .menu-item:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: translateY(-1px);
+        }
+        
+        .menu-item h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .menu-item p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .form-container {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        
+        .form-container h3 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 16px;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2196f3;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Заявки на рейсы</h1>
+            <p>Система подачи заявок на командировочные рейсы</p>
+        </div>
+        <div class="content">
+            <div class="menu-grid">
+                <div class="menu-item" onclick="showForm()">
+                    <h3>📝 Подать заявку</h3>
+                    <p>Создать новую заявку</p>
+                </div>
+                <div class="menu-item" onclick="showApplications()">
+                    <h3>📋 Мои заявки</h3>
+                    <p>Просмотр заявок</p>
+                </div>
+                <div class="menu-item" onclick="showPeriods()">
+                    <h3>📅 Периоды</h3>
+                    <p>Активные периоды</p>
+                </div>
+                <div class="menu-item" onclick="showStatistics()">
+                    <h3>📊 Статистика</h3>
+                    <p>Статистика заявок</p>
+                </div>
+            </div>
+            
+            <div id="formContainer" class="form-container">
+                <h3>Подача заявки на рейс</h3>
+                <form id="applicationForm">
+                    <div class="form-group">
+                        <label for="location">Локация:</label>
+                        <select id="location" required>
+                            <option value="">Выберите локацию</option>
+                            <option value="Москва">Москва</option>
+                            <option value="Санкт-Петербург">Санкт-Петербург</option>
+                            <option value="Новосибирск">Новосибирск</option>
+                            <option value="Екатеринбург">Екатеринбург</option>
+                            <option value="Красноярск">Красноярск</option>
+                            <option value="Сочи">Сочи</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oke">ОКЭ:</label>
+                        <select id="oke" required>
+                            <option value="">Выберите ОКЭ</option>
+                            <option value="ОКЭ 1">ОКЭ 1</option>
+                            <option value="ОКЭ 2">ОКЭ 2</option>
+                            <option value="ОКЭ 3">ОКЭ 3</option>
+                            <option value="ОКЭ 4">ОКЭ 4</option>
+                            <option value="ОКЭ 5">ОКЭ 5</option>
+                            <option value="ОКЭ Красноярск">ОКЭ Красноярск</option>
+                            <option value="ОКЭ Сочи">ОКЭ Сочи</option>
+                            <option value="ОЛСиТ">ОЛСиТ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Дата вылета:</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="position">Должность:</label>
+                        <select id="position" required>
+                            <option value="">Выберите должность</option>
+                            <option value="БП">БП</option>
+                            <option value="РП">РП</option>
+                            <option value="Специалист">Специалист</option>
+                            <option value="Эксперт">Эксперт</option>
+                            <option value="Руководитель">Руководитель</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="fio">ФИО:</label>
+                        <input type="text" id="fio" placeholder="Иванов Иван Иванович" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tab_num">Табельный номер:</label>
+                        <input type="text" id="tab_num" placeholder="123456" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="direction">Направление:</label>
+                        <select id="direction" required>
+                            <option value="">Выберите направление</option>
+                            <option value="Санкт-Петербург">Санкт-Петербург</option>
+                            <option value="Новосибирск">Новосибирск</option>
+                            <option value="Екатеринбург">Екатеринбург</option>
+                            <option value="Казань">Казань</option>
+                            <option value="Сочи">Сочи</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="wishes">Пожелания к рейсу:</label>
+                        <textarea id="wishes" placeholder="Укажите особые пожелания..." rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Отправить заявку</button>
+                </form>
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Отправка заявки...</p>
+                </div>
+                <div id="result" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Express SmartApp Frontend - SPA для WebView
+        class ExpressSmartApp {
+            constructor() {
+                this.botApiUrl = '/api/smartapp'; // Bot API endpoint
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.setMinDate();
+            }
+            
+            setupEventListeners() {
+                document.getElementById('applicationForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitApplication();
+                });
+            }
+            
+            setMinDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').min = today;
+            }
+            
+            async submitApplication() {
+                const formData = this.getFormData();
+                const userContext = this.getUserContext();
+                
+                this.showLoading(true);
+                this.hideResult();
+                
+                try {
+                    const response = await fetch(`${this.botApiUrl}/submit`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            form_data: formData,
+                            user_context: userContext
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    this.showLoading(false);
+                    
+                    if (result.success) {
+                        this.showResult('success', `✅ ${result.message}`, result.application_id);
+                        this.resetForm();
+                    } else {
+                        this.showResult('error', `❌ ${result.message}`, result.error);
+                    }
+                } catch (error) {
+                    this.showLoading(false);
+                    this.showResult('error', '❌ Ошибка отправки заявки', error.message);
+                }
+            }
+            
+            getFormData() {
+                return {
+                    location: document.getElementById('location').value,
+                    oke: document.getElementById('oke').value,
+                    date: document.getElementById('date').value,
+                    position: document.getElementById('position').value,
+                    fio: document.getElementById('fio').value,
+                    tab_num: document.getElementById('tab_num').value,
+                    direction: document.getElementById('direction').value,
+                    wishes: document.getElementById('wishes').value
+                };
+            }
+            
+            getUserContext() {
+                // В реальном Express SmartApp контекст пользователя передается от Express
+                return {
+                    user_id: 'express_user_' + Date.now(),
+                    user_name: 'Express User',
+                    platform: 'express_smartapp',
+                    express_token: 'mock_token' // В реальности - токен от Express
+                };
+            }
+            
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
+            }
+            
+            showResult(type, message, details = '') {
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = `result ${type}`;
+                resultDiv.innerHTML = `
+                    <strong>${message}</strong>
+                    ${details ? `<br><small>${details}</small>` : ''}
+                `;
+                resultDiv.style.display = 'block';
+            }
+            
+            hideResult() {
+                document.getElementById('result').style.display = 'none';
+            }
+            
+            resetForm() {
+                document.getElementById('applicationForm').reset();
+            }
+        }
+        
+        // Глобальные функции для меню
+        function showForm() {
+            document.getElementById('formContainer').style.display = 'block';
+        }
+        
+        function showApplications() {
+            alert('Функция "Мои заявки" в разработке');
+        }
+        
+        function showPeriods() {
+            alert('Функция "Периоды подачи" в разработке');
+        }
+        
+        function showStatistics() {
+            alert('Функция "Статистика" в разработке');
+        }
+        
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            new ExpressSmartApp();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

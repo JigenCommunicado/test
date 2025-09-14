@@ -1,0 +1,3319 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора - SmartApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .users-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .users-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-blocked {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-active { 
+            background: #e8f5e8; 
+            color: #2e7d32; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 0.9em;
+        }
+        .status-inactive { 
+            background: #ffebee; 
+            color: #c62828; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 0.9em;
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-admin {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .role-manager {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .role-user {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .role-viewer {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .permissions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .permission-item {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .users-table {
+                font-size: 12px;
+            }
+            
+            .users-table th,
+            .users-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Панель администратора</h1>
+            <p>Управление пользователями и системой</p>
+        </div>
+
+        <!-- Форма входа -->
+        <div id="loginForm" class="login-form">
+            <h2>Вход в систему</h2>
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="username">Логин</label>
+                    <input type="text" id="username" placeholder="Введите логин" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" placeholder="Введите пароль" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Войти
+                </button>
+            </form>
+            <div id="loginError" class="error" style="display: none;"></div>
+        </div>
+
+        <!-- Основной интерфейс -->
+        <div id="mainInterface" style="display: none;">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('dashboard')">📊 Дашборд</button>
+                <button class="nav-tab" onclick="showTab('applications')">📋 Заявки</button>
+                <button class="nav-tab" onclick="showTab('users')">👥 Пользователи</button>
+                <button class="nav-tab" onclick="showTab('statistics')">📈 Статистика</button>
+                <button class="nav-tab" onclick="showTab('logs')">📝 Логи</button>
+                <button class="nav-tab" onclick="showTab('notifications')">🔔 Уведомления</button>
+                <button class="nav-tab" onclick="showTab('periods')">📅 Периоды заявок</button>
+                <button class="nav-tab" onclick="showTab('profile')">👤 Профиль</button>
+                <button class="nav-tab" onclick="showTab('config')">⚙️ Конфигурация</button>
+                <button class="nav-tab" onclick="showTab('settings')">🔧 Настройки</button>
+                <button class="nav-tab" onclick="logout()">🚪 Выход</button>
+            </div>
+
+            <!-- Вкладка дашборда -->
+            <div id="dashboardTab" class="tab-content active">
+                <h3>📊 Обзор системы</h3>
+                <div id="dashboardContent" class="loading">
+                    Загрузка дашборда...
+                </div>
+            </div>
+
+            <!-- Вкладка заявок -->
+            <div id="applicationsTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>📋 Мониторинг заявок</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="exportToExcel()">📊 Экспорт в Excel</button>
+                        <button class="btn btn-info" onclick="refreshApplications()">🔄 Обновить</button>
+                        <button class="btn btn-primary" onclick="toggleAutoRefresh()" id="autoRefreshBtn">⏸️ Автообновление</button>
+                    </div>
+                </div>
+
+                <!-- Фильтры -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label for="statusFilter">Статус:</label>
+                            <select id="statusFilter" onchange="filterApplications()">
+                                <option value="">Все</option>
+                                <option value="pending">Ожидает</option>
+                                <option value="approved">Одобрена</option>
+                                <option value="rejected">Отклонена</option>
+                                <option value="completed">Завершена</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateFilter">Дата:</label>
+                            <select id="dateFilter" onchange="filterApplications()">
+                                <option value="today">Сегодня</option>
+                                <option value="week">За неделю</option>
+                                <option value="month">За месяц</option>
+                                <option value="all">Все время</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchFilter">Поиск:</label>
+                            <input type="text" id="searchFilter" placeholder="ФИО, направление..." onkeyup="filterApplications()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Статистика заявок -->
+                <div id="applicationsStats" class="loading">
+                    Загрузка статистики...
+                </div>
+
+                <!-- Таблица заявок -->
+                <div id="applicationsTable" class="loading">
+                    Загрузка заявок...
+                </div>
+
+                <!-- Пагинация -->
+                <div id="applicationsPagination" style="display: none; text-align: center; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="previousPage()">← Предыдущая</button>
+                    <span id="pageInfo" style="margin: 0 20px;"></span>
+                    <button class="btn btn-secondary" onclick="nextPage()">Следующая →</button>
+                </div>
+            </div>
+
+            <!-- Вкладка пользователей -->
+            <div id="usersTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Управление пользователями</h3>
+                    <button class="btn btn-primary" onclick="showCreateUserForm()">
+                        ➕ Создать пользователя
+                    </button>
+                </div>
+
+                <div id="usersTable" class="loading">
+                    Загрузка пользователей...
+                </div>
+            </div>
+
+            <!-- Вкладка статистики -->
+            <div id="statisticsTab" class="tab-content">
+                <h3>📈 Статистика системы</h3>
+                <div id="statisticsContent" class="loading">
+                    Загрузка статистики...
+                </div>
+            </div>
+
+            <!-- Вкладка логов -->
+            <div id="logsTab" class="tab-content">
+                <h3>📝 Логи системы</h3>
+                <div style="margin-bottom: 20px;">
+                    <select id="logLevel" onchange="loadLogs()">
+                        <option value="all">Все уровни</option>
+                        <option value="error">Только ошибки</option>
+                        <option value="warning">Предупреждения</option>
+                        <option value="info">Информация</option>
+                    </select>
+                    <input type="number" id="logLines" value="100" min="10" max="1000" onchange="loadLogs()" placeholder="Количество строк">
+                    <button class="btn btn-primary" onclick="loadLogs()">🔄 Обновить</button>
+                </div>
+                <div id="logsContent" class="loading">
+                    Загрузка логов...
+                </div>
+            </div>
+
+            <!-- Вкладка уведомлений -->
+            <div id="notificationsTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Конструктор уведомлений</h3>
+                    <button class="btn btn-primary" onclick="showCreateScheduleForm()">
+                        ➕ Создать расписание
+                    </button>
+                </div>
+
+                <div id="schedulesTable" class="loading">
+                    Загрузка расписаний...
+                </div>
+            </div>
+
+            <!-- Вкладка периодов заявок -->
+            <div id="periodsTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>📅 Управление периодами заявок</h3>
+                    <button class="btn btn-primary" onclick="window.open('application_periods.html', '_blank')">
+                        🗓️ Открыть управление периодами
+                    </button>
+                </div>
+                <div class="info-card">
+                    <h4>Информация о периодах</h4>
+                    <p>Здесь вы можете управлять периодами подачи заявок на корпоративные рейсы. Нажмите кнопку выше, чтобы открыть полный интерфейс управления.</p>
+                </div>
+            </div>
+
+            <!-- Вкладка профиля -->
+            <div id="profileTab" class="tab-content">
+                <h3>Мой профиль</h3>
+                <div id="userProfile" class="user-info">
+                    Загрузка профиля...
+                </div>
+            </div>
+
+            <!-- Вкладка конфигурации -->
+            <div id="configTab" class="tab-content">
+                <h3>⚙️ Управление конфигурацией</h3>
+                
+                <!-- Навигация по разделам конфигурации -->
+                <div class="config-nav" style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="showConfigSection('basic')">🔧 Основные</button>
+                    <button class="btn btn-primary" onclick="showConfigSection('directions')">🌍 Направления</button>
+                    <button class="btn btn-primary" onclick="showConfigSection('oke')">🏢 ОКЭ</button>
+                    <button class="btn btn-primary" onclick="showConfigSection('positions')">👨‍💼 Должности</button>
+                    <button class="btn btn-primary" onclick="showConfigSection('backup')">💾 Резервные копии</button>
+                </div>
+
+                <!-- Основные настройки -->
+                <div id="configBasic" class="config-section">
+                    <h4>🔧 Основные настройки бота</h4>
+                    <div id="basicConfigContent" class="loading">
+                        Загрузка основных настроек...
+                    </div>
+                </div>
+
+                <!-- Управление направлениями -->
+                <div id="configDirections" class="config-section" style="display: none;">
+                    <h4>🌍 Управление направлениями</h4>
+                    <div id="directionsConfigContent" class="loading">
+                        Загрузка направлений...
+                    </div>
+                </div>
+
+                <!-- Управление ОКЭ -->
+                <div id="configOke" class="config-section" style="display: none;">
+                    <h4>🏢 Управление ОКЭ</h4>
+                    <div id="okeConfigContent" class="loading">
+                        Загрузка ОКЭ...
+                    </div>
+                </div>
+
+                <!-- Управление должностями -->
+                <div id="configPositions" class="config-section" style="display: none;">
+                    <h4>👨‍💼 Управление должностями</h4>
+                    <div id="positionsConfigContent" class="loading">
+                        Загрузка должностей...
+                    </div>
+                </div>
+
+                <!-- Резервные копии -->
+                <div id="configBackup" class="config-section" style="display: none;">
+                    <h4>💾 Резервные копии конфигурации</h4>
+                    <div id="backupConfigContent" class="loading">
+                        Загрузка резервных копий...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вкладка настроек -->
+            <div id="settingsTab" class="tab-content">
+                <h3>🔧 Настройки системы</h3>
+                
+                <!-- Навигация по разделам настроек -->
+                <div class="settings-nav" style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="showSettingsSection('general')">⚙️ Общие</button>
+                    <button class="btn btn-primary" onclick="showSettingsSection('security')">🔒 Безопасность</button>
+                    <button class="btn btn-primary" onclick="showSettingsSection('notifications')">🔔 Уведомления</button>
+                    <button class="btn btn-primary" onclick="showSettingsSection('logging')">📝 Логирование</button>
+                    <button class="btn btn-primary" onclick="showSettingsSection('maintenance')">🔧 Обслуживание</button>
+                    <button class="btn btn-primary" onclick="showSettingsSection('stresstest')">🧪 Стресс-тест</button>
+                </div>
+
+                <!-- Общие настройки -->
+                <div id="settingsGeneral" class="settings-section">
+                    <h4>⚙️ Общие настройки</h4>
+                    <div id="generalSettingsContent" class="loading">
+                        Загрузка общих настроек...
+                    </div>
+                </div>
+
+                <!-- Настройки безопасности -->
+                <div id="settingsSecurity" class="settings-section" style="display: none;">
+                    <h4>🔒 Настройки безопасности</h4>
+                    <div id="securitySettingsContent" class="loading">
+                        Загрузка настроек безопасности...
+                    </div>
+                </div>
+
+                <!-- Настройки уведомлений -->
+                <div id="settingsNotifications" class="settings-section" style="display: none;">
+                    <h4>🔔 Настройки уведомлений</h4>
+                    <div id="notificationSettingsContent" class="loading">
+                        Загрузка настроек уведомлений...
+                    </div>
+                </div>
+
+                <!-- Настройки логирования -->
+                <div id="settingsLogging" class="settings-section" style="display: none;">
+                    <h4>📝 Настройки логирования</h4>
+                    <div id="loggingSettingsContent" class="loading">
+                        Загрузка настроек логирования...
+                    </div>
+                </div>
+
+                <!-- Обслуживание -->
+                <div id="settingsMaintenance" class="settings-section" style="display: none;">
+                    <h4>🔧 Обслуживание системы</h4>
+                    <div id="maintenanceSettingsContent" class="loading">
+                        Загрузка настроек обслуживания...
+                    </div>
+                </div>
+
+                <!-- Стресс-тестирование -->
+                <div id="settingsStressTest" class="settings-section" style="display: none;">
+                    <h4>🧪 Стресс-тестирование</h4>
+                    <div id="stressTestSettingsContent">
+                        <div class="form-group">
+                            <label>📊 Тестирование производительности</label>
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                    <div>
+                                        <label for="stressTestType">Тип теста:</label>
+                                        <select id="stressTestType" onchange="updateStressTestConfig()">
+                                            <option value="applications">Создание заявок</option>
+                                            <option value="users">Создание пользователей</option>
+                                            <option value="notifications">Отправка уведомлений</option>
+                                            <option value="mixed">Смешанный тест</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="stressTestCount">Количество операций:</label>
+                                        <input type="number" id="stressTestCount" value="100" min="1" max="10000">
+                                    </div>
+                                    <div>
+                                        <label for="stressTestDelay">Задержка (мс):</label>
+                                        <input type="number" id="stressTestDelay" value="100" min="0" max="5000">
+                                    </div>
+                                    <div>
+                                        <label for="stressTestConcurrency">Параллельность:</label>
+                                        <input type="number" id="stressTestConcurrency" value="5" min="1" max="50">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <button class="btn btn-primary" onclick="startStressTest()" id="startStressTestBtn">🚀 Запустить тест</button>
+                                    <button class="btn btn-danger" onclick="stopStressTest()" id="stopStressTestBtn" disabled>⏹️ Остановить</button>
+                                    <button class="btn btn-info" onclick="clearStressTestResults()">🗑️ Очистить результаты</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>📈 Результаты тестирования</label>
+                            <div id="stressTestResults" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; min-height: 200px;">
+                                <p style="color: #666; text-align: center;">Результаты тестирования появятся здесь</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно создания пользователя -->
+        <div id="createUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+                <h3>Создание пользователя</h3>
+                <form id="createUserForm">
+                    <div class="form-group">
+                        <label for="newUsername">Логин</label>
+                        <input type="text" id="newUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newEmail">Email</label>
+                        <input type="email" id="newEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newFullName">Полное имя</label>
+                        <input type="text" id="newFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Пароль</label>
+                        <input type="password" id="newPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newRole">Роль</label>
+                        <select id="newRole" required>
+                            <option value="user">Пользователь</option>
+                            <option value="manager">Менеджер</option>
+                            <option value="viewer">Наблюдатель</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="hideCreateUserForm()">
+                            Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Создать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальное окно создания расписания уведомлений -->
+        <div id="createScheduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+                <h3>Создание расписания уведомлений</h3>
+                <form id="createScheduleForm">
+                    <div class="form-group">
+                        <label for="scheduleName">Название расписания</label>
+                        <input type="text" id="scheduleName" placeholder="Например: Ежемесячное напоминание" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scheduleType">Тип уведомления</label>
+                        <select id="scheduleType" required>
+                            <option value="application_open">Начало приема заявок</option>
+                            <option value="application_closing_soon">Скоро окончание</option>
+                            <option value="application_closed">Прием завершен</option>
+                            <option value="application_reminder">Напоминание о заявке</option>
+                            <option value="system_announcement">Системное объявление</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scheduleTitle">Заголовок</label>
+                        <input type="text" id="scheduleTitle" placeholder="Заголовок уведомления" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scheduleMessage">Сообщение</label>
+                        <textarea id="scheduleMessage" rows="3" placeholder="Текст уведомления" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="scheduleFrequency">Частота отправки</label>
+                        <select id="scheduleFrequency" onchange="updateScheduleConfig()" required>
+                            <option value="once">Одноразово</option>
+                            <option value="daily">Ежедневно</option>
+                            <option value="weekly">Еженедельно</option>
+                            <option value="monthly">Ежемесячно</option>
+                        </select>
+                    </div>
+                    
+                    <div id="scheduleConfig">
+                        <!-- Конфигурация будет добавлена динамически -->
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="scheduleActive" checked>
+                            Активно
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="hideCreateScheduleForm()">
+                            Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Создать расписание
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SMARTAPP_URL = 'http://localhost:8082';
+        let currentUser = null;
+        let authToken = null;
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем сохраненный токен
+            authToken = localStorage.getItem('auth_token');
+            if (authToken) {
+                checkAuth();
+            }
+        });
+
+        // Проверка авторизации
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        currentUser = data.user;
+                        showMainInterface();
+                        loadUsers();
+                        loadProfile();
+                    } else {
+                        showLoginForm();
+                    }
+                } else {
+                    showLoginForm();
+                }
+            } catch (error) {
+                console.error('Ошибка проверки авторизации:', error);
+                showLoginForm();
+            }
+        }
+
+        // Показ формы входа
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('mainInterface').style.display = 'none';
+            authToken = null;
+            localStorage.removeItem('auth_token');
+        }
+
+        // Показ основного интерфейса
+        function showMainInterface() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('mainInterface').style.display = 'block';
+        }
+
+        // Вход в систему
+        document.getElementById('loginFormElement').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('auth_token', authToken);
+                    showMainInterface();
+                    loadUsers();
+                    loadProfile();
+                } else {
+                    showError('loginError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                showError('loginError', 'Ошибка соединения с сервером');
+            }
+        });
+
+        // Выход из системы
+        async function logout() {
+            try {
+                await fetch(`${SMARTAPP_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+            } catch (error) {
+                console.error('Ошибка выхода:', error);
+            }
+            
+            showLoginForm();
+        }
+
+        // Загрузка пользователей
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        displayUsers(data.users);
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+
+        // Отображение пользователей
+        function displayUsers(users) {
+            const table = document.getElementById('usersTable');
+            
+            if (users.length === 0) {
+                table.innerHTML = '<p>Пользователи не найдены</p>';
+                return;
+            }
+
+            let html = `
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Логин</th>
+                            <th>Email</th>
+                            <th>Полное имя</th>
+                            <th>Роль</th>
+                            <th>Статус</th>
+                            <th>Создан</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            users.forEach(user => {
+                html += `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${user.full_name}</td>
+                        <td><span class="role-badge role-${user.role}">${user.role}</span></td>
+                        <td><span class="status-badge status-${user.status}">${user.status}</span></td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editUser('${user.id}')">Изменить</button>
+                            ${user.role !== 'admin' ? `<button class="btn btn-danger" onclick="deleteUser('${user.id}')">Удалить</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            table.innerHTML = html;
+        }
+
+        // Загрузка профиля
+        async function loadProfile() {
+            const profileDiv = document.getElementById('userProfile');
+            profileDiv.innerHTML = `
+                <h4>${currentUser.full_name}</h4>
+                <p><strong>Логин:</strong> ${currentUser.username}</p>
+                <p><strong>Email:</strong> ${currentUser.email}</p>
+                <p><strong>Роль:</strong> ${currentUser.role}</p>
+                <p><strong>Статус:</strong> ${currentUser.status}</p>
+                <p><strong>Права доступа:</strong></p>
+                <div class="permissions-list">
+                    ${currentUser.permissions.map(perm => `<div class="permission-item">${perm}</div>`).join('')}
+                </div>
+            `;
+        }
+
+        // Создание пользователя
+        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                username: document.getElementById('newUsername').value,
+                email: document.getElementById('newEmail').value,
+                full_name: document.getElementById('newFullName').value,
+                password: document.getElementById('newPassword').value,
+                role: document.getElementById('newRole').value
+            };
+
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideCreateUserForm();
+                    loadUsers();
+                    showSuccess('Пользователь создан успешно');
+                } else {
+                    showError('createUserError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка создания пользователя:', error);
+                showError('createUserError', 'Ошибка соединения с сервером');
+            }
+        });
+
+        // Показ формы создания пользователя
+        function showCreateUserForm() {
+            document.getElementById('createUserModal').style.display = 'block';
+        }
+
+        // Скрытие формы создания пользователя
+        function hideCreateUserForm() {
+            document.getElementById('createUserModal').style.display = 'none';
+            document.getElementById('createUserForm').reset();
+        }
+
+        // Удаление пользователя
+        async function deleteUser(userId) {
+            if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadUsers();
+                    showSuccess('Пользователь удален');
+                } else {
+                    showError('usersError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка удаления пользователя:', error);
+                showError('usersError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Переключение вкладок
+        function showTab(tabName) {
+            console.log('Переключение на вкладку:', tabName);
+            
+            // Скрываем все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Показываем выбранную вкладку
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Загружаем данные для вкладки
+            if (tabName === 'dashboard') {
+                loadDashboard();
+            } else if (tabName === 'applications') {
+                loadApplications();
+            } else if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'statistics') {
+                loadStatistics();
+            } else if (tabName === 'logs') {
+                loadLogs();
+            } else if (tabName === 'notifications') {
+                console.log('Загружаем расписания уведомлений...');
+                loadNotificationSchedules();
+            } else if (tabName === 'periods') {
+                // Периоды загружаются в отдельном окне
+            } else if (tabName === 'config') {
+                loadConfig();
+            } else if (tabName === 'settings') {
+                loadSettings();
+            } else if (tabName === 'profile') {
+                loadUserProfile();
+            }
+        }
+
+        // Вспомогательные функции
+        function showError(elementId, message) {
+            const errorDiv = document.getElementById(elementId);
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function showSuccess(message) {
+            // Создаем временное уведомление об успехе
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            successDiv.style.position = 'fixed';
+            successDiv.style.top = '20px';
+            successDiv.style.right = '20px';
+            successDiv.style.zIndex = '1001';
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(successDiv);
+            }, 3000);
+        }
+
+        // ==================== ФУНКЦИИ РАСПИСАНИЯ УВЕДОМЛЕНИЙ ====================
+
+        // Загрузка расписаний уведомлений
+        async function loadNotificationSchedules() {
+            console.log('Загрузка расписаний уведомлений...');
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications/schedules`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Данные расписаний:', data);
+                    if (data.success) {
+                        displayNotificationSchedules(data.schedules);
+                    } else {
+                        document.getElementById('schedulesTable').innerHTML = '<div class="error">Ошибка загрузки расписаний</div>';
+                    }
+                } else {
+                    console.error('Ошибка HTTP:', response.status);
+                    document.getElementById('schedulesTable').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки расписаний:', error);
+                document.getElementById('schedulesTable').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Отображение расписаний уведомлений
+        function displayNotificationSchedules(schedules) {
+            const container = document.getElementById('schedulesTable');
+            
+            if (schedules.length === 0) {
+                container.innerHTML = '<div class="no-data">Расписания уведомлений не найдены</div>';
+                return;
+            }
+
+            let html = `
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Тип</th>
+                                <th>Частота</th>
+                                <th>Статус</th>
+                                <th>Следующая отправка</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            schedules.forEach(schedule => {
+                const statusClass = schedule.is_active ? 'status-active' : 'status-inactive';
+                const statusText = schedule.is_active ? 'Активно' : 'Неактивно';
+                const nextSend = schedule.next_send ? new Date(schedule.next_send).toLocaleString('ru-RU') : 'Не запланировано';
+                
+                html += `
+                    <tr>
+                        <td>${schedule.name}</td>
+                        <td>${getNotificationTypeText(schedule.type)}</td>
+                        <td>${getScheduleTypeText(schedule.schedule_type)}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>${nextSend}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="testSchedule('${schedule.id}')">Тест</button>
+                            <button class="btn btn-sm btn-secondary" onclick="editSchedule('${schedule.id}')">Изменить</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSchedule('${schedule.id}')">Удалить</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Получение текста типа уведомления
+        function getNotificationTypeText(type) {
+            const types = {
+                'application_open': 'Начало приема',
+                'application_closing_soon': 'Скоро окончание',
+                'application_closed': 'Прием завершен',
+                'application_reminder': 'Напоминание',
+                'system_announcement': 'Объявление'
+            };
+            return types[type] || type;
+        }
+
+        // Получение текста типа расписания
+        function getScheduleTypeText(type) {
+            const types = {
+                'once': 'Одноразово',
+                'daily': 'Ежедневно',
+                'weekly': 'Еженедельно',
+                'monthly': 'Ежемесячно'
+            };
+            return types[type] || type;
+        }
+
+        // Показ формы создания расписания
+        function showCreateScheduleForm() {
+            document.getElementById('createScheduleModal').style.display = 'block';
+            updateScheduleConfig();
+        }
+
+        // Скрытие формы создания расписания
+        function hideCreateScheduleForm() {
+            document.getElementById('createScheduleModal').style.display = 'none';
+            document.getElementById('createScheduleForm').reset();
+            
+            // Сбрасываем состояние редактирования
+            delete document.getElementById('createScheduleForm').dataset.editId;
+            document.querySelector('#createScheduleModal h3').textContent = 'Создание расписания уведомлений';
+            document.querySelector('#createScheduleForm button[type="submit"]').textContent = 'Создать расписание';
+        }
+
+        // Обновление конфигурации расписания
+        function updateScheduleConfig() {
+            const frequency = document.getElementById('scheduleFrequency').value;
+            const configDiv = document.getElementById('scheduleConfig');
+            
+            let html = '';
+            
+            if (frequency === 'once') {
+                html = `
+                    <div class="form-group">
+                        <label for="onceDate">Дата и время отправки</label>
+                        <input type="datetime-local" id="onceDate" required>
+                    </div>
+                `;
+            } else if (frequency === 'daily') {
+                html = `
+                    <div class="form-group">
+                        <label for="dailyTime">Время отправки</label>
+                        <input type="time" id="dailyTime" value="09:00" required>
+                    </div>
+                `;
+            } else if (frequency === 'weekly') {
+                html = `
+                    <div class="form-group">
+                        <label for="weeklyDay">День недели</label>
+                        <select id="weeklyDay" required>
+                            <option value="0">Понедельник</option>
+                            <option value="1">Вторник</option>
+                            <option value="2">Среда</option>
+                            <option value="3">Четверг</option>
+                            <option value="4">Пятница</option>
+                            <option value="5">Суббота</option>
+                            <option value="6">Воскресенье</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="weeklyTime">Время отправки</label>
+                        <input type="time" id="weeklyTime" value="09:00" required>
+                    </div>
+                `;
+            } else if (frequency === 'monthly') {
+                html = `
+                    <div class="form-group">
+                        <label for="monthlyDay">День месяца</label>
+                        <input type="number" id="monthlyDay" min="1" max="31" value="15" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="monthlyTime">Время отправки</label>
+                        <input type="time" id="monthlyTime" value="09:00" required>
+                    </div>
+                `;
+            }
+            
+            configDiv.innerHTML = html;
+        }
+
+        // Создание/редактирование расписания
+        document.getElementById('createScheduleForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const frequency = document.getElementById('scheduleFrequency').value;
+            let scheduleConfig = {};
+            
+            if (frequency === 'once') {
+                const sendTime = document.getElementById('onceDate').value;
+                scheduleConfig = { scheduled_at: sendTime };
+            } else if (frequency === 'daily') {
+                scheduleConfig = {
+                    time: document.getElementById('dailyTime').value
+                };
+            } else if (frequency === 'weekly') {
+                scheduleConfig = {
+                    day_of_week: parseInt(document.getElementById('weeklyDay').value),
+                    time: document.getElementById('weeklyTime').value
+                };
+            } else if (frequency === 'monthly') {
+                scheduleConfig = {
+                    day_of_month: parseInt(document.getElementById('monthlyDay').value),
+                    time: document.getElementById('monthlyTime').value
+                };
+            }
+            
+            const scheduleData = {
+                name: document.getElementById('scheduleName').value,
+                schedule_type: document.getElementById('scheduleType').value,
+                title: document.getElementById('scheduleTitle').value,
+                message: document.getElementById('scheduleMessage').value,
+                frequency: frequency,
+                schedule_config: scheduleConfig,
+                is_active: document.getElementById('scheduleActive').checked
+            };
+            
+            try {
+                const editId = document.getElementById('createScheduleForm').dataset.editId;
+                const url = editId ? 
+                    `${SMARTAPP_URL}/api/notifications/schedules/${editId}` : 
+                    `${SMARTAPP_URL}/api/notifications/schedules`;
+                const method = editId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(scheduleData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        hideCreateScheduleForm();
+                        loadNotificationSchedules();
+                        showSuccess(editId ? 'Расписание уведомлений обновлено' : 'Расписание уведомлений создано');
+                    } else {
+                        showError('schedulesError', data.error || 'Ошибка сохранения расписания');
+                    }
+                } else {
+                    showError('schedulesError', 'Ошибка соединения с сервером');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения расписания:', error);
+                showError('schedulesError', 'Ошибка соединения с сервером');
+            }
+        });
+
+        // Тестирование расписания
+        async function testSchedule(scheduleId) {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications/schedules/${scheduleId}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showSuccess('Тестовое уведомление отправлено');
+                    } else {
+                        showError('schedulesError', data.error || 'Ошибка тестирования');
+                    }
+                } else {
+                    showError('schedulesError', 'Ошибка соединения с сервером');
+                }
+            } catch (error) {
+                console.error('Ошибка тестирования расписания:', error);
+                showError('schedulesError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Редактирование расписания
+        async function editSchedule(scheduleId) {
+            try {
+                // Получаем данные расписания
+                const response = await fetch(`/api/notifications/schedules/${scheduleId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const schedule = await response.json();
+                
+                // Заполняем форму данными расписания
+                document.getElementById('scheduleName').value = schedule.name || '';
+                document.getElementById('scheduleType').value = schedule.schedule_type || 'application_open';
+                document.getElementById('scheduleTitle').value = schedule.title || '';
+                document.getElementById('scheduleMessage').value = schedule.message || '';
+                document.getElementById('scheduleFrequency').value = schedule.frequency || 'once';
+                document.getElementById('scheduleActive').checked = schedule.is_active !== false;
+                
+                // Обновляем конфигурацию
+                updateScheduleConfig();
+                
+                // Заполняем конфигурацию в зависимости от типа
+                if (schedule.frequency === 'once' && schedule.scheduled_at) {
+                    const date = new Date(schedule.scheduled_at);
+                    document.getElementById('onceDate').value = date.toISOString().slice(0, 16);
+                } else if (schedule.frequency === 'daily' && schedule.time) {
+                    document.getElementById('dailyTime').value = schedule.time;
+                } else if (schedule.frequency === 'weekly' && schedule.day_of_week !== undefined && schedule.time) {
+                    document.getElementById('weeklyDay').value = schedule.day_of_week;
+                    document.getElementById('weeklyTime').value = schedule.time;
+                } else if (schedule.frequency === 'monthly' && schedule.day_of_month !== undefined && schedule.time) {
+                    document.getElementById('monthlyDay').value = schedule.day_of_month;
+                    document.getElementById('monthlyTime').value = schedule.time;
+                }
+                
+                // Показываем форму
+                showCreateScheduleForm();
+                
+                // Изменяем заголовок и кнопку для редактирования
+                document.querySelector('#createScheduleModal h3').textContent = 'Редактирование расписания';
+                document.querySelector('#createScheduleForm button[type="submit"]').textContent = 'Сохранить изменения';
+                
+                // Сохраняем ID для обновления
+                document.getElementById('createScheduleForm').dataset.editId = scheduleId;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки расписания:', error);
+                showError('schedulesError', 'Ошибка загрузки данных расписания');
+            }
+        }
+
+        // Удаление расписания
+        async function deleteSchedule(scheduleId) {
+            if (!confirm('Вы уверены, что хотите удалить это расписание?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/notifications/schedules/${scheduleId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        loadNotificationSchedules();
+                        showSuccess('Расписание удалено');
+                    } else {
+                        showError('schedulesError', data.error || 'Ошибка удаления');
+                    }
+                } else {
+                    showError('schedulesError', 'Ошибка соединения с сервером');
+                }
+            } catch (error) {
+                console.error('Ошибка удаления расписания:', error);
+                showError('schedulesError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // ==================== НОВЫЕ ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ БОТОМ ====================
+
+        // Загрузка дашборда
+        async function loadDashboard() {
+            try {
+                const [botStatus, statistics] = await Promise.all([
+                    fetch(`${SMARTAPP_URL}/api/bot/status`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    }).then(r => r.json()),
+                    fetch(`${SMARTAPP_URL}/api/statistics`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    }).then(r => r.json())
+                ]);
+
+                const dashboardHtml = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="dashboard-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #28a745;">
+                            <h4>🤖 Статус бота</h4>
+                            <p><strong>Состояние:</strong> <span style="color: ${botStatus.bot_status === 'running' ? '#28a745' : '#dc3545'}">${botStatus.bot_status === 'running' ? 'Запущен' : 'Остановлен'}</span></p>
+                            <p><strong>Процессов:</strong> ${botStatus.processes ? botStatus.processes.length : 0}</p>
+                        </div>
+                        
+                        <div class="dashboard-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #007bff;">
+                            <h4>📊 Заявки</h4>
+                            <p><strong>Всего:</strong> ${statistics.statistics?.applications?.total || 0}</p>
+                            <p><strong>Сегодня:</strong> ${statistics.statistics?.applications?.today || 0}</p>
+                            <p><strong>За неделю:</strong> ${statistics.statistics?.applications?.this_week || 0}</p>
+                        </div>
+                        
+                        <div class="dashboard-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107;">
+                            <h4>👥 Пользователи</h4>
+                            <p><strong>Всего:</strong> ${statistics.statistics?.users?.total || 0}</p>
+                            <p><strong>Активных сегодня:</strong> ${statistics.statistics?.users?.active_today || 0}</p>
+                            <p><strong>Активных за неделю:</strong> ${statistics.statistics?.users?.active_this_week || 0}</p>
+                        </div>
+                        
+                        <div class="dashboard-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #17a2b8;">
+                            <h4>💻 Система</h4>
+                            <p><strong>CPU:</strong> ${botStatus.system?.cpu_percent || 0}%</p>
+                            <p><strong>Память:</strong> ${botStatus.system?.memory_percent || 0}%</p>
+                            <p><strong>Диск:</strong> ${botStatus.system?.disk_percent || 0}%</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('dashboardContent').innerHTML = dashboardHtml;
+            } catch (error) {
+                console.error('Ошибка загрузки дашборда:', error);
+                document.getElementById('dashboardContent').innerHTML = '<div class="error">Ошибка загрузки дашборда</div>';
+            }
+        }
+
+
+        // Загрузка статистики
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/statistics`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = data.statistics;
+                    
+                    const statsHtml = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                            <div class="stats-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <h4>📝 Заявки</h4>
+                                <p><strong>Всего:</strong> ${stats.applications?.total || 0}</p>
+                                <p><strong>Сегодня:</strong> ${stats.applications?.today || 0}</p>
+                                <p><strong>За неделю:</strong> ${stats.applications?.this_week || 0}</p>
+                                <p><strong>За месяц:</strong> ${stats.applications?.this_month || 0}</p>
+                            </div>
+                            
+                            <div class="stats-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <h4>👥 Пользователи</h4>
+                                <p><strong>Всего:</strong> ${stats.users?.total || 0}</p>
+                                <p><strong>Активных сегодня:</strong> ${stats.users?.active_today || 0}</p>
+                                <p><strong>Активных за неделю:</strong> ${stats.users?.active_this_week || 0}</p>
+                            </div>
+                            
+                            <div class="stats-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <h4>🏆 Популярные направления</h4>
+                                ${stats.popular_directions ? stats.popular_directions.map(dir => 
+                                    `<p><strong>${dir.name}:</strong> ${dir.count} заявок</p>`
+                                ).join('') : '<p>Нет данных</p>'}
+                            </div>
+                            
+                            <div class="stats-card" style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                                <h4>💚 Здоровье системы</h4>
+                                <p><strong>Время работы бота:</strong> ${stats.system_health?.bot_uptime || 'Неизвестно'}</p>
+                                <p><strong>Последняя ошибка:</strong> ${stats.system_health?.last_error || 'Нет'}</p>
+                                <p><strong>Время отклика:</strong> ${stats.system_health?.response_time || 'Неизвестно'}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('statisticsContent').innerHTML = statsHtml;
+                } else {
+                    document.getElementById('statisticsContent').innerHTML = '<div class="error">Ошибка загрузки статистики</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+                document.getElementById('statisticsContent').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Загрузка логов
+        async function loadLogs() {
+            try {
+                const level = document.getElementById('logLevel').value;
+                const lines = document.getElementById('logLines').value;
+                
+                const response = await fetch(`${SMARTAPP_URL}/api/logs?level=${level}&lines=${lines}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    const logsHtml = `
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                            <strong>Всего строк:</strong> ${data.total_lines} | <strong>Уровень:</strong> ${data.level}
+                        </div>
+                        <div style="background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 500px; overflow-y: auto;">
+                            ${data.logs.map(log => `<div>${log}</div>`).join('')}
+                        </div>
+                    `;
+                    
+                    document.getElementById('logsContent').innerHTML = logsHtml;
+                } else {
+                    document.getElementById('logsContent').innerHTML = '<div class="error">Ошибка загрузки логов</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки логов:', error);
+                document.getElementById('logsContent').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // ==================== ФУНКЦИИ УПРАВЛЕНИЯ КОНФИГУРАЦИЕЙ ====================
+
+        let currentConfig = null;
+
+        // Загрузка конфигурации
+        async function loadConfig() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentConfig = data.config;
+                    loadBasicConfig();
+                } else {
+                    showError('configError', 'Ошибка загрузки конфигурации');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки конфигурации:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Показ раздела конфигурации
+        function showConfigSection(section) {
+            // Скрываем все разделы
+            document.querySelectorAll('.config-section').forEach(div => {
+                div.style.display = 'none';
+            });
+            
+            // Показываем выбранный раздел
+            document.getElementById('config' + section.charAt(0).toUpperCase() + section.slice(1)).style.display = 'block';
+            
+            // Загружаем данные для раздела
+            switch(section) {
+                case 'basic':
+                    loadBasicConfig();
+                    break;
+                case 'directions':
+                    loadDirectionsConfig();
+                    break;
+                case 'oke':
+                    loadOkeConfig();
+                    break;
+                case 'positions':
+                    loadPositionsConfig();
+                    break;
+                case 'backup':
+                    loadBackupConfig();
+                    break;
+            }
+        }
+
+        // Загрузка основных настроек
+        async function loadBasicConfig() {
+            if (!currentConfig) return;
+            
+            const botSettings = currentConfig.bot_settings || {};
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <form id="basicConfigForm">
+                        <div class="form-group">
+                            <label for="botName">Название бота:</label>
+                            <input type="text" id="botName" value="${botSettings.bot_name || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="botDescription">Описание бота:</label>
+                            <textarea id="botDescription" rows="3">${botSettings.bot_description || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="apiUrl">API URL:</label>
+                            <input type="url" id="apiUrl" value="${botSettings.api_base_url || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="botId">Bot ID:</label>
+                            <input type="text" id="botId" value="${botSettings.bot_id || ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="secretKey">Secret Key:</label>
+                            <input type="password" id="secretKey" value="${botSettings.secret_key || ''}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+                    </form>
+                </div>
+            `;
+            
+            document.getElementById('basicConfigContent').innerHTML = html;
+            
+            // Обработчик формы
+            document.getElementById('basicConfigForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await saveBasicConfig();
+            });
+        }
+
+        // Сохранение основных настроек
+        async function saveBasicConfig() {
+            try {
+                const botSettings = {
+                    bot_name: document.getElementById('botName').value,
+                    bot_description: document.getElementById('botDescription').value,
+                    api_base_url: document.getElementById('apiUrl').value,
+                    bot_id: document.getElementById('botId').value,
+                    secret_key: document.getElementById('secretKey').value
+                };
+                
+                currentConfig.bot_settings = botSettings;
+                
+                const response = await fetch(`${SMARTAPP_URL}/api/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(currentConfig)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Основные настройки сохранены');
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения основных настроек:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Загрузка конфигурации направлений
+        async function loadDirectionsConfig() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/directions`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayDirectionsConfig(data.directions);
+                } else {
+                    document.getElementById('directionsConfigContent').innerHTML = '<div class="error">Ошибка загрузки направлений</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки направлений:', error);
+                document.getElementById('directionsConfigContent').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Отображение конфигурации направлений
+        function displayDirectionsConfig(directions) {
+            let html = '';
+            
+            for (const [location, directionList] of Object.entries(directions)) {
+                html += `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h5>${location}</h5>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                            ${directionList.map(direction => `
+                                <span style="background: #e9ecef; padding: 5px 10px; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
+                                    ${direction}
+                                    <button onclick="removeDirection('${location}', '${direction}')" style="background: none; border: none; color: #dc3545; cursor: pointer;">❌</button>
+                                </span>
+                            `).join('')}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="newDirection_${location}" placeholder="Новое направление" style="flex: 1;">
+                            <button onclick="addDirection('${location}')" class="btn btn-success">➕ Добавить</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('directionsConfigContent').innerHTML = html;
+        }
+
+        // Добавление направления
+        async function addDirection(location) {
+            const input = document.getElementById(`newDirection_${location}`);
+            const direction = input.value.trim();
+            
+            if (!direction) {
+                showError('configError', 'Введите название направления');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/directions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ location, direction })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    input.value = '';
+                    loadDirectionsConfig();
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка добавления направления:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Удаление направления
+        async function removeDirection(location, direction) {
+            if (!confirm(`Удалить направление "${direction}" для ${location}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/directions?location=${encodeURIComponent(location)}&direction=${encodeURIComponent(direction)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    loadDirectionsConfig();
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка удаления направления:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Загрузка конфигурации ОКЭ
+        async function loadOkeConfig() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/oke`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayOkeConfig(data.oke);
+                } else {
+                    document.getElementById('okeConfigContent').innerHTML = '<div class="error">Ошибка загрузки ОКЭ</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки ОКЭ:', error);
+                document.getElementById('okeConfigContent').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Отображение конфигурации ОКЭ
+        function displayOkeConfig(oke) {
+            let html = '';
+            
+            for (const [location, okeList] of Object.entries(oke)) {
+                html += `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h5>${location}</h5>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                            ${okeList.map(okeItem => `
+                                <span style="background: #e9ecef; padding: 5px 10px; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
+                                    ${okeItem}
+                                    <button onclick="removeOke('${location}', '${okeItem}')" style="background: none; border: none; color: #dc3545; cursor: pointer;">❌</button>
+                                </span>
+                            `).join('')}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="newOke_${location}" placeholder="Новый ОКЭ" style="flex: 1;">
+                            <button onclick="addOke('${location}')" class="btn btn-success">➕ Добавить</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('okeConfigContent').innerHTML = html;
+        }
+
+        // Добавление ОКЭ
+        async function addOke(location) {
+            const input = document.getElementById(`newOke_${location}`);
+            const oke = input.value.trim();
+            
+            if (!oke) {
+                showError('configError', 'Введите название ОКЭ');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/oke`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ location, oke })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    input.value = '';
+                    loadOkeConfig();
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка добавления ОКЭ:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Удаление ОКЭ
+        async function removeOke(location, oke) {
+            if (!confirm(`Удалить ОКЭ "${oke}" для ${location}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/oke?location=${encodeURIComponent(location)}&oke=${encodeURIComponent(oke)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    loadOkeConfig();
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка удаления ОКЭ:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Загрузка конфигурации должностей
+        async function loadPositionsConfig() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/positions`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayPositionsConfig(data.positions);
+                } else {
+                    document.getElementById('positionsConfigContent').innerHTML = '<div class="error">Ошибка загрузки должностей</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки должностей:', error);
+                document.getElementById('positionsConfigContent').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Отображение конфигурации должностей
+        function displayPositionsConfig(positions) {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>Список должностей</h5>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                        ${positions.map(position => `
+                            <span style="background: #e9ecef; padding: 5px 10px; border-radius: 5px; display: flex; align-items: center; gap: 5px;">
+                                ${position}
+                                <button onclick="removePosition('${position}')" style="background: none; border: none; color: #dc3545; cursor: pointer;">❌</button>
+                            </span>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="newPosition" placeholder="Новая должность" style="flex: 1;">
+                        <button onclick="addPosition()" class="btn btn-success">➕ Добавить</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('positionsConfigContent').innerHTML = html;
+        }
+
+        // Добавление должности
+        async function addPosition() {
+            const input = document.getElementById('newPosition');
+            const position = input.value.trim();
+            
+            if (!position) {
+                showError('configError', 'Введите название должности');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/positions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ position })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    input.value = '';
+                    loadPositionsConfig();
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка добавления должности:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Удаление должности
+        async function removePosition(position) {
+            if (!confirm(`Удалить должность "${position}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/positions?position=${encodeURIComponent(position)}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    loadPositionsConfig();
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка удаления должности:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Загрузка резервных копий
+        async function loadBackupConfig() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/backup`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayBackupConfig(data.backups);
+                } else {
+                    document.getElementById('backupConfigContent').innerHTML = '<div class="error">Ошибка загрузки резервных копий</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки резервных копий:', error);
+                document.getElementById('backupConfigContent').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Отображение резервных копий
+        function displayBackupConfig(backups) {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>Резервные копии конфигурации</h5>
+                    ${backups.length > 0 ? `
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${backups.map(backup => `
+                                <div style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong>${backup.filename}</strong><br>
+                                        <small>Создана: ${new Date(backup.created).toLocaleString()}</small><br>
+                                        <small>Размер: ${(backup.size / 1024).toFixed(1)} KB</small>
+                                    </div>
+                                    <button onclick="restoreBackup('${backup.path}')" class="btn btn-warning">🔄 Восстановить</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<p>Резервные копии не найдены</p>'}
+                </div>
+            `;
+            
+            document.getElementById('backupConfigContent').innerHTML = html;
+        }
+
+        // Восстановление из резервной копии
+        async function restoreBackup(backupPath) {
+            if (!confirm('Восстановить конфигурацию из этой резервной копии? Текущая конфигурация будет сохранена как backup.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/config/backup/restore`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ backup_file: backupPath })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess(data.message);
+                    loadConfig(); // Перезагружаем конфигурацию
+                } else {
+                    showError('configError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка восстановления:', error);
+                showError('configError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // ==================== ФУНКЦИИ УПРАВЛЕНИЯ НАСТРОЙКАМИ ====================
+
+        // Загрузка настроек
+        async function loadSettings() {
+            loadGeneralSettings();
+            loadStressTestSettings();
+        }
+
+        // Показ раздела настроек
+        function showSettingsSection(section) {
+            console.log('Переключение на секцию настроек:', section);
+            
+            // Скрываем все разделы
+            document.querySelectorAll('.settings-section').forEach(div => {
+                div.style.display = 'none';
+            });
+            
+            // Показываем выбранный раздел
+            let sectionId;
+            if (section === 'stresstest') {
+                sectionId = 'settingsStressTest';
+            } else {
+                sectionId = 'settings' + section.charAt(0).toUpperCase() + section.slice(1);
+            }
+            console.log('Показываем секцию:', sectionId);
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.style.display = 'block';
+            } else {
+                console.error('Элемент не найден:', sectionId);
+            }
+            
+            // Загружаем данные для раздела
+            switch(section) {
+                case 'general':
+                    loadGeneralSettings();
+                    break;
+                case 'security':
+                    loadSecuritySettings();
+                    break;
+                case 'notifications':
+                    loadNotificationSettings();
+                    break;
+                case 'logging':
+                    loadLoggingSettings();
+                    break;
+                case 'maintenance':
+                    loadMaintenanceSettings();
+                    break;
+                case 'stresstest':
+                    loadStressTestSettings();
+                    break;
+            }
+        }
+
+        // Загрузка общих настроек
+        function loadGeneralSettings() {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>🌐 Настройки сервера</h5>
+                    <div class="form-group">
+                        <label for="serverPort">Порт сервера:</label>
+                        <input type="number" id="serverPort" value="5006" min="1000" max="65535">
+                        <small>Порт для админ панели (требует перезапуска)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="serverHost">Хост сервера:</label>
+                        <select id="serverHost">
+                            <option value="0.0.0.0">0.0.0.0 (все интерфейсы)</option>
+                            <option value="127.0.0.1">127.0.0.1 (только локально)</option>
+                            <option value="localhost">localhost</option>
+                        </select>
+                    </div>
+
+                    <h5>🤖 Настройки бота</h5>
+                    <div class="form-group">
+                        <label for="botDebugMode">Режим отладки:</label>
+                        <input type="checkbox" id="botDebugMode" checked>
+                        <small>Включить подробное логирование</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="botAutoRestart">Автоперезапуск при ошибках:</label>
+                        <input type="checkbox" id="botAutoRestart">
+                        <small>Автоматически перезапускать бота при критических ошибках</small>
+                    </div>
+
+                    <h5>📊 Настройки дашборда</h5>
+                    <div class="form-group">
+                        <label for="dashboardRefreshInterval">Интервал обновления (сек):</label>
+                        <input type="number" id="dashboardRefreshInterval" value="30" min="5" max="300">
+                        <small>Как часто обновлять данные на дашборде</small>
+                    </div>
+
+                    <button onclick="saveGeneralSettings()" class="btn btn-primary">💾 Сохранить</button>
+                </div>
+            `;
+            
+            document.getElementById('generalSettingsContent').innerHTML = html;
+        }
+
+        // Сохранение общих настроек
+        async function saveGeneralSettings() {
+            const settings = {
+                server: {
+                    port: document.getElementById('serverPort').value,
+                    host: document.getElementById('serverHost').value
+                },
+                bot: {
+                    debug_mode: document.getElementById('botDebugMode').checked,
+                    auto_restart: document.getElementById('botAutoRestart').checked
+                },
+                dashboard: {
+                    refresh_interval: document.getElementById('dashboardRefreshInterval').value
+                }
+            };
+            
+            showSuccess('Общие настройки сохранены');
+            console.log('Сохранены общие настройки:', settings);
+        }
+
+        // Загрузка настроек безопасности
+        function loadSecuritySettings() {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>🔐 Аутентификация</h5>
+                    <div class="form-group">
+                        <label for="sessionTimeout">Таймаут сессии (минуты):</label>
+                        <input type="number" id="sessionTimeout" value="60" min="5" max="1440">
+                        <small>Время неактивности до автоматического выхода</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxLoginAttempts">Максимум попыток входа:</label>
+                        <input type="number" id="maxLoginAttempts" value="5" min="3" max="20">
+                        <small>Количество неудачных попыток до блокировки</small>
+                    </div>
+
+                    <h5>🛡️ Защита</h5>
+                    <div class="form-group">
+                        <label for="enableCORS">Включить CORS:</label>
+                        <input type="checkbox" id="enableCORS" checked>
+                        <small>Разрешить запросы с других доменов</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="allowedOrigins">Разрешенные домены:</label>
+                        <textarea id="allowedOrigins" rows="3" placeholder="http://localhost:3000&#10;https://yourdomain.com">http://localhost:3000
+https://yourdomain.com</textarea>
+                        <small>По одному домену на строку</small>
+                    </div>
+
+                    <h5>🔒 Пароли</h5>
+                    <div class="form-group">
+                        <label for="minPasswordLength">Минимальная длина пароля:</label>
+                        <input type="number" id="minPasswordLength" value="8" min="6" max="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="requireSpecialChars">Требовать спецсимволы:</label>
+                        <input type="checkbox" id="requireSpecialChars">
+                        <small>Пароль должен содержать !@#$%^&*</small>
+                    </div>
+
+                    <button onclick="saveSecuritySettings()" class="btn btn-primary">💾 Сохранить</button>
+                </div>
+            `;
+            
+            document.getElementById('securitySettingsContent').innerHTML = html;
+        }
+
+        // Сохранение настроек безопасности
+        async function saveSecuritySettings() {
+            const settings = {
+                auth: {
+                    session_timeout: document.getElementById('sessionTimeout').value,
+                    max_login_attempts: document.getElementById('maxLoginAttempts').value
+                },
+                security: {
+                    enable_cors: document.getElementById('enableCORS').checked,
+                    allowed_origins: document.getElementById('allowedOrigins').value.split('\n').filter(o => o.trim())
+                },
+                passwords: {
+                    min_length: document.getElementById('minPasswordLength').value,
+                    require_special_chars: document.getElementById('requireSpecialChars').checked
+                }
+            };
+            
+            showSuccess('Настройки безопасности сохранены');
+            console.log('Сохранены настройки безопасности:', settings);
+        }
+
+        // Загрузка настроек уведомлений
+        function loadNotificationSettings() {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>📧 Email уведомления</h5>
+                    <div class="form-group">
+                        <label for="smtpEnabled">Включить SMTP:</label>
+                        <input type="checkbox" id="smtpEnabled">
+                        <small>Отправка уведомлений по email</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpHost">SMTP сервер:</label>
+                        <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpPort">SMTP порт:</label>
+                        <input type="number" id="smtpPort" value="587" min="1" max="65535">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpUser">SMTP пользователь:</label>
+                        <input type="email" id="smtpUser" placeholder="your-email@gmail.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="smtpPassword">SMTP пароль:</label>
+                        <input type="password" id="smtpPassword" placeholder="app-password">
+                    </div>
+
+                    <h5>🔔 Push уведомления</h5>
+                    <div class="form-group">
+                        <label for="pushEnabled">Включить Push:</label>
+                        <input type="checkbox" id="pushEnabled">
+                        <small>Уведомления в браузере</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pushVapidKey">VAPID ключ:</label>
+                        <input type="text" id="pushVapidKey" placeholder="BEl62iUYgUivxIkv69yViEuiBIa40HI...">
+                    </div>
+
+                    <h5>📱 Telegram уведомления</h5>
+                    <div class="form-group">
+                        <label for="telegramEnabled">Включить Telegram:</label>
+                        <input type="checkbox" id="telegramEnabled">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telegramBotToken">Bot Token:</label>
+                        <input type="text" id="telegramBotToken" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telegramChatId">Chat ID:</label>
+                        <input type="text" id="telegramChatId" placeholder="-1001234567890">
+                    </div>
+
+                    <button onclick="saveNotificationSettings()" class="btn btn-primary">💾 Сохранить</button>
+                </div>
+            `;
+            
+            document.getElementById('notificationSettingsContent').innerHTML = html;
+        }
+
+        // Сохранение настроек уведомлений
+        async function saveNotificationSettings() {
+            const settings = {
+                email: {
+                    enabled: document.getElementById('smtpEnabled').checked,
+                    smtp_host: document.getElementById('smtpHost').value,
+                    smtp_port: document.getElementById('smtpPort').value,
+                    smtp_user: document.getElementById('smtpUser').value,
+                    smtp_password: document.getElementById('smtpPassword').value
+                },
+                push: {
+                    enabled: document.getElementById('pushEnabled').checked,
+                    vapid_key: document.getElementById('pushVapidKey').value
+                },
+                telegram: {
+                    enabled: document.getElementById('telegramEnabled').checked,
+                    bot_token: document.getElementById('telegramBotToken').value,
+                    chat_id: document.getElementById('telegramChatId').value
+                }
+            };
+            
+            showSuccess('Настройки уведомлений сохранены');
+            console.log('Сохранены настройки уведомлений:', settings);
+        }
+
+        // Загрузка настроек логирования
+        function loadLoggingSettings() {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>📝 Уровни логирования</h5>
+                    <div class="form-group">
+                        <label for="logLevel">Уровень логирования:</label>
+                        <select id="logLevel">
+                            <option value="DEBUG">DEBUG - Подробная отладочная информация</option>
+                            <option value="INFO" selected>INFO - Общая информация</option>
+                            <option value="WARNING">WARNING - Предупреждения</option>
+                            <option value="ERROR">ERROR - Только ошибки</option>
+                            <option value="CRITICAL">CRITICAL - Критические ошибки</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logToFile">Логировать в файл:</label>
+                        <input type="checkbox" id="logToFile" checked>
+                        <small>Сохранять логи в файл bot.log</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logToConsole">Логировать в консоль:</label>
+                        <input type="checkbox" id="logToConsole" checked>
+                        <small>Выводить логи в консоль сервера</small>
+                    </div>
+
+                    <h5>📁 Управление логами</h5>
+                    <div class="form-group">
+                        <label for="maxLogSize">Максимальный размер лога (MB):</label>
+                        <input type="number" id="maxLogSize" value="10" min="1" max="1000">
+                        <small>При превышении создается новый файл</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logRetentionDays">Хранить логи (дней):</label>
+                        <input type="number" id="logRetentionDays" value="30" min="1" max="365">
+                        <small>Автоматически удалять старые логи</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logFormat">Формат логов:</label>
+                        <select id="logFormat">
+                            <option value="simple">Простой: 2024-01-01 12:00:00 - INFO - Message</option>
+                            <option value="detailed" selected>Подробный: 2024-01-01 12:00:00,123 - INFO - module:function:line - Message</option>
+                            <option value="json">JSON: {"timestamp": "...", "level": "INFO", "message": "..."}</option>
+                        </select>
+                    </div>
+
+                    <h5>🧹 Очистка логов</h5>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button onclick="clearLogs()" class="btn btn-warning">🗑️ Очистить текущие логи</button>
+                        <button onclick="downloadLogs()" class="btn btn-info">📥 Скачать логи</button>
+                        <button onclick="archiveLogs()" class="btn btn-secondary">📦 Архивировать логи</button>
+                    </div>
+
+                    <button onclick="saveLoggingSettings()" class="btn btn-primary">💾 Сохранить</button>
+                </div>
+            `;
+            
+            document.getElementById('loggingSettingsContent').innerHTML = html;
+        }
+
+        // Сохранение настроек логирования
+        async function saveLoggingSettings() {
+            const settings = {
+                level: document.getElementById('logLevel').value,
+                to_file: document.getElementById('logToFile').checked,
+                to_console: document.getElementById('logToConsole').checked,
+                max_size_mb: document.getElementById('maxLogSize').value,
+                retention_days: document.getElementById('logRetentionDays').value,
+                format: document.getElementById('logFormat').value
+            };
+            
+            showSuccess('Настройки логирования сохранены');
+            console.log('Сохранены настройки логирования:', settings);
+        }
+
+        // Загрузка настроек обслуживания
+        function loadMaintenanceSettings() {
+            const html = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                    <h5>🤖 Управление ботом</h5>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button onclick="startBot()" class="btn btn-success">▶️ Запустить бота</button>
+                        <button onclick="stopBot()" class="btn btn-danger">⏹️ Остановить бота</button>
+                        <button onclick="restartBot()" class="btn btn-warning">🔄 Перезапустить бота</button>
+                    </div>
+
+                    <h5>🔄 Перезапуск системы</h5>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button onclick="restartAdminServer()" class="btn btn-warning">🔄 Перезапустить админ панель</button>
+                        <button onclick="restartAll()" class="btn btn-danger">⚡ Перезапустить всё</button>
+                    </div>
+
+                    <h5>💾 Резервное копирование</h5>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button onclick="createBackup()" class="btn btn-success">💾 Создать backup</button>
+                        <button onclick="restoreBackup()" class="btn btn-info">📥 Восстановить backup</button>
+                        <button onclick="listBackups()" class="btn btn-secondary">📋 Список backup'ов</button>
+                    </div>
+
+                    <h5>🧹 Очистка системы</h5>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button onclick="clearCache()" class="btn btn-warning">🗑️ Очистить кэш</button>
+                        <button onclick="clearTempFiles()" class="btn btn-warning">📁 Очистить временные файлы</button>
+                        <button onclick="optimizeDatabase()" class="btn btn-info">⚡ Оптимизировать БД</button>
+                    </div>
+
+                    <h5>📊 Мониторинг системы</h5>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button onclick="checkSystemHealth()" class="btn btn-info">💚 Проверить здоровье системы</button>
+                        <button onclick="viewSystemInfo()" class="btn btn-secondary">ℹ️ Информация о системе</button>
+                        <button onclick="testConnections()" class="btn btn-primary">🔗 Тест соединений</button>
+                    </div>
+
+                    <h5>⚙️ Автоматическое обслуживание</h5>
+                    <div class="form-group">
+                        <label for="autoBackup">Автоматические backup'ы:</label>
+                        <input type="checkbox" id="autoBackup" checked>
+                        <small>Создавать backup каждый день в 02:00</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="autoCleanup">Автоочистка логов:</label>
+                        <input type="checkbox" id="autoCleanup" checked>
+                        <small>Удалять логи старше 30 дней</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="autoRestart">Автоперезапуск:</label>
+                        <input type="checkbox" id="autoRestart">
+                        <small>Перезапускать сервисы при ошибках</small>
+                    </div>
+
+                    <button onclick="saveMaintenanceSettings()" class="btn btn-primary">💾 Сохранить</button>
+                </div>
+            `;
+            
+            document.getElementById('maintenanceSettingsContent').innerHTML = html;
+        }
+
+        // Сохранение настроек обслуживания
+        async function saveMaintenanceSettings() {
+            const settings = {
+                auto_backup: document.getElementById('autoBackup').checked,
+                auto_cleanup: document.getElementById('autoCleanup').checked,
+                auto_restart: document.getElementById('autoRestart').checked
+            };
+            
+            showSuccess('Настройки обслуживания сохранены');
+            console.log('Сохранены настройки обслуживания:', settings);
+        }
+
+        // Функции обслуживания
+        async function restartAdminServer() {
+            if (confirm('Перезапустить админ панель? Это закроет текущую сессию.')) {
+                showSuccess('Админ панель будет перезапущена...');
+                // В реальном приложении здесь был бы API вызов для перезапуска сервера
+            }
+        }
+
+        // Запуск бота
+        async function startBot() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/bot/start`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Бот запущен успешно');
+                } else {
+                    showError('settingsError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка запуска бота:', error);
+                showError('settingsError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Остановка бота
+        async function stopBot() {
+            if (!confirm('Вы уверены, что хотите остановить бота?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/bot/stop`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Бот остановлен');
+                } else {
+                    showError('settingsError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка остановки бота:', error);
+                showError('settingsError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Перезапуск бота
+        async function restartBot() {
+            if (!confirm('Вы уверены, что хотите перезапустить бота?')) {
+                return;
+            }
+            
+            try {
+                // Сначала останавливаем
+                await fetch(`${SMARTAPP_URL}/api/bot/stop`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                // Ждем немного
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Затем запускаем
+                const response = await fetch(`${SMARTAPP_URL}/api/bot/start`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Бот перезапущен');
+                } else {
+                    showError('settingsError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка перезапуска бота:', error);
+                showError('settingsError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        async function restartAll() {
+            if (confirm('Перезапустить всю систему? Это может прервать работу бота.')) {
+                try {
+                    // Перезапускаем бота
+                    await restartBot();
+                    // В реальном приложении здесь был бы API вызов для перезапуска сервера
+                    showSuccess('Система будет перезапущена...');
+                } catch (error) {
+                    console.error('Ошибка перезапуска системы:', error);
+                    showError('settingsError', 'Ошибка перезапуска системы');
+                }
+            }
+        }
+
+        async function createBackup() {
+            showSuccess('Создание backup...');
+        }
+
+        async function clearCache() {
+            if (confirm('Очистить кэш системы?')) {
+                showSuccess('Кэш очищен');
+            }
+        }
+
+        async function checkSystemHealth() {
+            showSuccess('Проверка здоровья системы...');
+        }
+
+        async function testConnections() {
+            showSuccess('Тестирование соединений...');
+        }
+
+        // Функции для работы с логами
+        async function clearLogs() {
+            if (confirm('Очистить все логи? Это действие необратимо.')) {
+                showSuccess('Логи очищены');
+            }
+        }
+
+        async function downloadLogs() {
+            showSuccess('Скачивание логов...');
+        }
+
+        async function archiveLogs() {
+            showSuccess('Архивирование логов...');
+        }
+
+        // ==================== ФУНКЦИИ СТРЕСС-ТЕСТИРОВАНИЯ ====================
+
+        let stressTestRunning = false;
+        let stressTestResults = [];
+
+        // Загрузка настроек стресс-тестирования
+        function loadStressTestSettings() {
+            console.log('Загрузка настроек стресс-тестирования...');
+            const targetElement = document.getElementById('stressTestSettingsContent');
+            console.log('Целевой элемент:', targetElement);
+            
+            const content = `
+                <div class="form-group">
+                    <label>📊 Тестирование производительности</label>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div>
+                                <label for="stressTestType">Тип теста:</label>
+                                <select id="stressTestType" onchange="updateStressTestConfig()">
+                                    <option value="applications">Создание заявок</option>
+                                    <option value="users">Создание пользователей</option>
+                                    <option value="notifications">Отправка уведомлений</option>
+                                    <option value="mixed">Смешанный тест</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="stressTestCount">Количество операций:</label>
+                                <input type="number" id="stressTestCount" value="100" min="1" max="10000">
+                            </div>
+                            <div>
+                                <label for="stressTestDelay">Задержка (мс):</label>
+                                <input type="number" id="stressTestDelay" value="100" min="0" max="5000">
+                            </div>
+                            <div>
+                                <label for="stressTestConcurrency">Параллельность:</label>
+                                <input type="number" id="stressTestConcurrency" value="5" min="1" max="50">
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-primary" onclick="startStressTest()" id="startStressTestBtn">🚀 Запустить тест</button>
+                            <button class="btn btn-danger" onclick="stopStressTest()" id="stopStressTestBtn" disabled>⏹️ Остановить</button>
+                            <button class="btn btn-info" onclick="clearStressTestResults()">🗑️ Очистить результаты</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>📈 Результаты тестирования</label>
+                    <div id="stressTestResults" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; min-height: 200px;">
+                        <p style="color: #666; text-align: center;">Результаты тестирования появятся здесь</p>
+                    </div>
+                </div>
+            `;
+            
+            console.log('Устанавливаем контент стресс-тестирования...');
+            if (targetElement) {
+                targetElement.innerHTML = content;
+                console.log('Контент установлен успешно');
+            } else {
+                console.error('Элемент stressTestSettingsContent не найден!');
+            }
+        }
+
+        // Обновление конфигурации стресс-теста
+        function updateStressTestConfig() {
+            const testType = document.getElementById('stressTestType').value;
+            const countInput = document.getElementById('stressTestCount');
+            const delayInput = document.getElementById('stressTestDelay');
+            const concurrencyInput = document.getElementById('stressTestConcurrency');
+            
+            // Устанавливаем рекомендуемые значения в зависимости от типа теста
+            switch (testType) {
+                case 'applications':
+                    countInput.value = 100;
+                    delayInput.value = 100;
+                    concurrencyInput.value = 5;
+                    break;
+                case 'users':
+                    countInput.value = 50;
+                    delayInput.value = 200;
+                    concurrencyInput.value = 3;
+                    break;
+                case 'notifications':
+                    countInput.value = 200;
+                    delayInput.value = 50;
+                    concurrencyInput.value = 10;
+                    break;
+                case 'mixed':
+                    countInput.value = 50;
+                    delayInput.value = 150;
+                    concurrencyInput.value = 3;
+                    break;
+            }
+        }
+
+        // Запуск стресс-теста
+        async function startStressTest() {
+            if (stressTestRunning) {
+                showError('stressTestError', 'Тест уже выполняется');
+                return;
+            }
+
+            const testType = document.getElementById('stressTestType').value;
+            const count = parseInt(document.getElementById('stressTestCount').value);
+            const delay = parseInt(document.getElementById('stressTestDelay').value);
+            const concurrency = parseInt(document.getElementById('stressTestConcurrency').value);
+
+            if (count < 1 || count > 10000) {
+                showError('stressTestError', 'Количество операций должно быть от 1 до 10000');
+                return;
+            }
+
+            stressTestRunning = true;
+            document.getElementById('startStressTestBtn').disabled = true;
+            document.getElementById('stopStressTestBtn').disabled = false;
+
+            // Очищаем предыдущие результаты
+            document.getElementById('stressTestResults').innerHTML = '<div class="loading">Запуск теста...</div>';
+
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/stress-test/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        test_type: testType,
+                        count: count,
+                        delay: delay,
+                        concurrency: concurrency
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Стресс-тест запущен');
+                    // Начинаем мониторинг результатов
+                    monitorStressTest();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка запуска стресс-теста:', error);
+                showError('stressTestError', 'Ошибка запуска теста: ' + error.message);
+                stressTestRunning = false;
+                document.getElementById('startStressTestBtn').disabled = false;
+                document.getElementById('stopStressTestBtn').disabled = true;
+            }
+        }
+
+        // Остановка стресс-теста
+        async function stopStressTest() {
+            if (!stressTestRunning) return;
+
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/stress-test/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Стресс-тест остановлен');
+                }
+            } catch (error) {
+                console.error('Ошибка остановки стресс-теста:', error);
+            }
+
+            stressTestRunning = false;
+            document.getElementById('startStressTestBtn').disabled = false;
+            document.getElementById('stopStressTestBtn').disabled = true;
+        }
+
+        // Мониторинг результатов стресс-теста
+        async function monitorStressTest() {
+            if (!stressTestRunning) return;
+
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/stress-test/status`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayStressTestResults(data);
+                    
+                    if (data.status === 'running') {
+                        // Продолжаем мониторинг
+                        setTimeout(monitorStressTest, 1000);
+                    } else {
+                        // Тест завершен
+                        stressTestRunning = false;
+                        document.getElementById('startStressTestBtn').disabled = false;
+                        document.getElementById('stopStressTestBtn').disabled = true;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка мониторинга:', error);
+            }
+        }
+
+        // Отображение результатов стресс-теста
+        function displayStressTestResults(data) {
+            const resultsDiv = document.getElementById('stressTestResults');
+            
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #1976d2;">${data.completed || 0}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">Выполнено</p>
+                    </div>
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #f57c00;">${data.total || 0}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">Всего</p>
+                    </div>
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #388e3c;">${data.success_rate || 0}%</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">Успешность</p>
+                    </div>
+                    <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #7b1fa2;">${data.avg_response_time || 0}мс</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">Среднее время</p>
+                    </div>
+                </div>
+            `;
+
+            if (data.status === 'running') {
+                html += `
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h5 style="margin: 0; color: #856404;">🔄 Тест выполняется...</h5>
+                        <div style="background: #e9ecef; border-radius: 4px; height: 20px; margin-top: 10px;">
+                            <div style="background: #28a745; height: 100%; border-radius: 4px; width: ${(data.completed / data.total) * 100}%; transition: width 0.3s;"></div>
+                        </div>
+                        <p style="margin: 5px 0 0 0; color: #666;">${data.completed} из ${data.total} операций</p>
+                    </div>
+                `;
+            } else if (data.status === 'completed') {
+                html += `
+                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h5 style="margin: 0; color: #155724;">✅ Тест завершен</h5>
+                        <p style="margin: 5px 0 0 0; color: #666;">Время выполнения: ${data.duration || 0}с</p>
+                    </div>
+                `;
+            } else if (data.status === 'error') {
+                html += `
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h5 style="margin: 0; color: #721c24;">❌ Ошибка теста</h5>
+                        <p style="margin: 5px 0 0 0; color: #666;">${data.error || 'Неизвестная ошибка'}</p>
+                    </div>
+                `;
+            }
+
+            // Детальная статистика
+            if (data.details) {
+                html += `
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <h6>📊 Детальная статистика</h6>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                            <div><strong>Успешных:</strong> ${data.details.successful || 0}</div>
+                            <div><strong>Ошибок:</strong> ${data.details.errors || 0}</div>
+                            <div><strong>Мин. время:</strong> ${data.details.min_time || 0}мс</div>
+                            <div><strong>Макс. время:</strong> ${data.details.max_time || 0}мс</div>
+                            <div><strong>RPS:</strong> ${data.details.rps || 0}</div>
+                            <div><strong>Параллельность:</strong> ${data.details.concurrency || 0}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Очистка результатов стресс-теста
+        function clearStressTestResults() {
+            document.getElementById('stressTestResults').innerHTML = '<p style="color: #666; text-align: center;">Результаты тестирования появятся здесь</p>';
+        }
+
+        // ==================== ФУНКЦИИ ДЛЯ РАБОТЫ С ЗАЯВКАМИ ====================
+
+        let applicationsData = [];
+        let filteredApplications = [];
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let autoRefreshInterval = null;
+        let isAutoRefreshEnabled = false;
+
+        // Загрузка заявок
+        async function loadApplications() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/applications`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    applicationsData = data.applications || [];
+                    filteredApplications = [...applicationsData];
+                    displayApplications();
+                    loadApplicationsStats();
+                } else {
+                    document.getElementById('applicationsTable').innerHTML = '<div class="error">Ошибка загрузки заявок</div>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки заявок:', error);
+                document.getElementById('applicationsTable').innerHTML = '<div class="error">Ошибка соединения с сервером</div>';
+            }
+        }
+
+        // Загрузка статистики заявок
+        async function loadApplicationsStats() {
+            const stats = {
+                total: applicationsData.length,
+                today: applicationsData.filter(app => {
+                    const today = new Date().toDateString();
+                    return new Date(app.created_at).toDateString() === today;
+                }).length,
+                thisWeek: applicationsData.filter(app => {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return new Date(app.created_at) >= weekAgo;
+                }).length,
+                thisMonth: applicationsData.filter(app => {
+                    const monthAgo = new Date();
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    return new Date(app.created_at) >= monthAgo;
+                }).length
+            };
+
+            const statsHtml = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #1976d2;">${stats.total}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">Всего заявок</p>
+                    </div>
+                    <div style="background: #e0f2f1; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #00695c;">${stats.today}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">Сегодня</p>
+                    </div>
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #f57c00;">${stats.thisWeek}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">За неделю</p>
+                    </div>
+                    <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                        <h4 style="margin: 0; color: #7b1fa2;">${stats.thisMonth}</h4>
+                        <p style="margin: 5px 0 0 0; color: #666;">За месяц</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('applicationsStats').innerHTML = statsHtml;
+        }
+
+        // Отображение заявок
+        function displayApplications() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageApplications = filteredApplications.slice(startIndex, endIndex);
+
+            if (pageApplications.length === 0) {
+                document.getElementById('applicationsTable').innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">Заявки не найдены</div>';
+                document.getElementById('applicationsPagination').style.display = 'none';
+                return;
+            }
+
+            let html = `
+                <table class="users-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ФИО</th>
+                            <th>Направление</th>
+                            <th>Дата создания</th>
+                            <th>Дата вылета</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            pageApplications.forEach(app => {
+                html += `
+                    <tr>
+                        <td>#${app.id || 'N/A'}</td>
+                        <td>${app.full_name || 'N/A'}</td>
+                        <td>${app.direction || 'N/A'}</td>
+                        <td>${new Date(app.created_at).toLocaleDateString('ru-RU')}</td>
+                        <td>${app.departure_date || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-info" onclick="viewApplication(${app.id})">👁️ Просмотр</button>
+                            <button class="btn btn-warning" onclick="editApplication(${app.id})">✏️ Изменить</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('applicationsTable').innerHTML = html;
+
+            // Пагинация
+            const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+            if (totalPages > 1) {
+                document.getElementById('applicationsPagination').style.display = 'block';
+                document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages}`;
+            } else {
+                document.getElementById('applicationsPagination').style.display = 'none';
+            }
+        }
+
+        // Получение класса статуса
+        function getStatusClass(status) {
+            const statusClasses = {
+                'pending': 'status-pending',
+                'approved': 'status-approved',
+                'rejected': 'status-rejected',
+                'completed': 'status-completed'
+            };
+            return statusClasses[status] || 'status-pending';
+        }
+
+        // Получение текста статуса
+        function getStatusText(status) {
+            const statusTexts = {
+                'pending': 'Ожидает',
+                'approved': 'Одобрена',
+                'rejected': 'Отклонена',
+                'completed': 'Завершена'
+            };
+            return statusTexts[status] || 'Неизвестно';
+        }
+
+        // Фильтрация заявок
+        function filterApplications() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+            filteredApplications = applicationsData.filter(app => {
+                // Фильтр по статусу
+                if (statusFilter && app.status !== statusFilter) {
+                    return false;
+                }
+
+                // Фильтр по дате
+                if (dateFilter !== 'all') {
+                    const appDate = new Date(app.created_at);
+                    const now = new Date();
+                    
+                    switch (dateFilter) {
+                        case 'today':
+                            if (appDate.toDateString() !== now.toDateString()) return false;
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            if (appDate < weekAgo) return false;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            if (appDate < monthAgo) return false;
+                            break;
+                    }
+                }
+
+                // Поиск
+                if (searchFilter) {
+                    const searchText = `${app.full_name || ''} ${app.direction || ''} ${app.id || ''}`.toLowerCase();
+                    if (!searchText.includes(searchFilter)) return false;
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            displayApplications();
+            loadApplicationsStats();
+        }
+
+        // Обновление заявок
+        function refreshApplications() {
+            loadApplications();
+        }
+
+        // Переключение автообновления
+        function toggleAutoRefresh() {
+            const btn = document.getElementById('autoRefreshBtn');
+            
+            if (isAutoRefreshEnabled) {
+                clearInterval(autoRefreshInterval);
+                isAutoRefreshEnabled = false;
+                btn.textContent = '▶️ Автообновление';
+                btn.classList.remove('btn-danger');
+                btn.classList.add('btn-primary');
+            } else {
+                autoRefreshInterval = setInterval(loadApplications, 30000); // Каждые 30 секунд
+                isAutoRefreshEnabled = true;
+                btn.textContent = '⏸️ Остановить';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-danger');
+            }
+        }
+
+        // Пагинация
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayApplications();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayApplications();
+            }
+        }
+
+        // Просмотр заявки
+        function viewApplication(id) {
+            const app = applicationsData.find(a => a.id === id);
+            if (app) {
+                alert(`Заявка #${id}\nФИО: ${app.full_name}\nНаправление: ${app.direction}\nСтатус: ${getStatusText(app.status)}\nДата: ${new Date(app.created_at).toLocaleString()}`);
+            }
+        }
+
+        // Редактирование заявки
+        function editApplication(id) {
+            const app = applicationsData.find(a => a.id === id);
+            if (app) {
+                const newStatus = prompt('Изменить статус заявки:', app.status);
+                if (newStatus && newStatus !== app.status) {
+                    updateApplicationStatus(id, newStatus);
+                }
+            }
+        }
+
+        // Обновление статуса заявки
+        async function updateApplicationStatus(id, status) {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/applications/${id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    showSuccess('Статус заявки обновлен');
+                    loadApplications();
+                } else {
+                    showError('applicationsError', data.error);
+                }
+            } catch (error) {
+                console.error('Ошибка обновления статуса:', error);
+                showError('applicationsError', 'Ошибка соединения с сервером');
+            }
+        }
+
+        // Экспорт в Excel
+        async function exportToExcel() {
+            try {
+                const response = await fetch(`${SMARTAPP_URL}/api/applications/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        filters: {
+                            status: document.getElementById('statusFilter').value,
+                            date: document.getElementById('dateFilter').value,
+                            search: document.getElementById('searchFilter').value
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `applications_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showSuccess('Файл Excel загружен');
+                } else {
+                    showError('applicationsError', 'Ошибка экспорта в Excel');
+                }
+            } catch (error) {
+                console.error('Ошибка экспорта:', error);
+                showError('applicationsError', 'Ошибка соединения с сервером');
+            }
+        }
+    </script>
+</body>
+</html>

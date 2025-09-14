@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  express-bot:
+    build: .
+    container_name: express-bot-prod
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - BOT_CREDENTIALS=${BOT_CREDENTIALS}
+      - HOST=${HOST}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - express-network
+
+  postgres:
+    image: postgres:15
+    container_name: express-bot-postgres-prod
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-express_bot_db}
+      - POSTGRES_USER=${POSTGRES_USER:-express_bot_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - express-network
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:7
+    container_name: express-bot-redis-prod
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - express-network
+    ports:
+      - "6380:6379"
+
+  nginx:
+    image: nginx:alpine
+    container_name: express-bot-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - express-bot
+    networks:
+      - express-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  express-network:
+    driver: bridge

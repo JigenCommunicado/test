@@ -1,0 +1,46 @@
+{
+  "users": [
+    {
+      "id": "admin",
+      "username": "admin",
+      "email": "admin@smartapp.local",
+      "full_name": "Администратор системы",
+      "role": "admin",
+      "status": "active",
+      "password_hash": "9b92b22ef0d6638956039728b9020834:0b542edc10e47c9188cd2d92c9534734bdd264b7fade02281ea06af4c634d2cc",
+      "created_at": "2025-09-05T17:13:48.997333",
+      "last_login": "2025-09-06T23:23:04.270534",
+      "login_attempts": 0,
+      "locked_until": null,
+      "preferences": {}
+    },
+    {
+      "id": "e5b1f2f2efbcecf3",
+      "username": "manager1",
+      "email": "manager@example.com",
+      "full_name": "Менеджер Тестов",
+      "role": "manager",
+      "status": "active",
+      "password_hash": "ed272528f425f026da81737ff35c63fa:e68eae28ae40fd352dc614b4a9327f2c295be68ce216e7083243e3d9479847cb",
+      "created_at": "2025-09-05T17:18:27.102350",
+      "last_login": "2025-09-05T17:20:00.780857",
+      "login_attempts": 0,
+      "locked_until": null,
+      "preferences": {}
+    },
+    {
+      "id": "9ae100aa3a6f6d03",
+      "username": "andrei8002011",
+      "email": "andrei8002011@gmail.com",
+      "full_name": "Соколянский А. В.",
+      "role": "manager",
+      "status": "pending",
+      "password_hash": "026fc9b00f3f35681a3c003fdea3f6bf:1d95adb56e2067453bc36a971a3c8c2cac9eb2c6abc59f2bf025d8df4fa7a7cc",
+      "created_at": "2025-09-05T17:48:25.763195",
+      "last_login": null,
+      "login_attempts": 0,
+      "locked_until": null,
+      "preferences": {}
+    }
+  ]
+}

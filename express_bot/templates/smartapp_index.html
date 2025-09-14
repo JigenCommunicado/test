@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config.app_name }} - SmartApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .step {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .step-description {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .option-btn:hover {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .option-btn.selected {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            padding: 10px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .calendar-day:hover:not(.disabled) {
+            background: #4facfe;
+            color: white;
+        }
+
+        .calendar-day.today {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .calendar-day.disabled {
+            background: #f8f9fa;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.selected {
+            background: #4facfe;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #4facfe;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3d8bfe;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+
+
+        .summary {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .summary-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-icon {
+            font-size: 4em;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .month-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .month-nav-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .month-nav-btn:hover {
+            background: #3d8bfe;
+            transform: scale(1.1);
+        }
+
+        .month-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ {{ config.app_name }}</h1>
+            <p>Система заказа рейсов для сотрудников</p>
+        </div>
+
+        <div class="content">
+            <!-- Шаг 1: Выбор локации -->
+            <div class="step active" id="step-location">
+                <h2 class="step-title">Выберите локацию</h2>
+                <p class="step-description">Выберите вашу рабочую локацию и отделение</p>
+                
+                <div class="options-grid">
+                    <div class="option-btn" data-location="МСК">
+                        🏙️ Москва
+                    </div>
+                    <div class="option-btn" data-location="СПБ">
+                        🌉 Санкт-Петербург
+                    </div>
+                    <div class="option-btn" data-location="Красноярск">
+                        🏞️ Красноярск
+                    </div>
+                    <div class="option-btn" data-location="Сочи">
+                        🏖️ Сочи
+                    </div>
+                </div>
+            </div>
+
+            <!-- Шаг 2: Выбор ОКЭ -->
+            <div class="step" id="step-oke">
+                <h2 class="step-title">Выберите подразделение</h2>
+                <p class="step-description">Выберите ваше ОКЭ (Отдел коммерческой эксплуатации)</p>
+                
+                <div class="options-grid" id="oke-options">
+                    <!-- Динамически заполняется -->
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-location')">← Назад</button>
+                </div>
+            </div>
+
+            <!-- Шаг 3: Выбор даты -->
+            <div class="step" id="step-date">
+                <h2 class="step-title">Выберите дату</h2>
+                <p class="step-description">Выберите дату для вашего рейса</p>
+                
+                <div class="month-navigation">
+                    <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+                    <div class="month-title" id="month-title">Январь 2024</div>
+                    <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+                </div>
+                
+                <div class="calendar" id="calendar">
+                    <!-- Динамически заполняется -->
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-oke')">← Назад</button>
+                </div>
+            </div>
+
+            <!-- Шаг 4: Выбор должности -->
+            <div class="step" id="step-position">
+                <h2 class="step-title">Выберите должность</h2>
+                <p class="step-description">Укажите вашу должность</p>
+                
+                <div class="options-grid">
+                    <div class="option-btn" data-position="БП">БП</div>
+                    <div class="option-btn" data-position="БП BS">БП BS</div>
+                    <div class="option-btn" data-position="СБЭ">СБЭ</div>
+                    <div class="option-btn" data-position="ИПБ">ИПБ</div>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-date')">← Назад</button>
+                </div>
+            </div>
+
+            <!-- Шаг 5: Ввод ФИО -->
+            <div class="step" id="step-fio">
+                <h2 class="step-title">Введите данные</h2>
+                <p class="step-description">Укажите ваши ФИО и табельный номер</p>
+                
+                <div class="form-group">
+                    <label for="fio">ФИО</label>
+                    <input type="text" id="fio" placeholder="Например: Иванов И.И.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tab-num">Табельный номер</label>
+                    <input type="text" id="tab-num" placeholder="Например: 123456">
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-position')">← Назад</button>
+                    <button class="btn btn-primary" onclick="submitFio()">Далее →</button>
+                </div>
+            </div>
+
+            <!-- Шаг 6: Выбор направления -->
+            <div class="step" id="step-direction">
+                <h2 class="step-title">Выберите направление</h2>
+                <p class="step-description">Выберите направление вашего рейса</p>
+                
+                <div class="options-grid" id="direction-options">
+                    <!-- Динамически заполняется -->
+                </div>
+                
+                <div class="form-group">
+                    <label for="custom-direction">Или введите свое направление:</label>
+                    <input type="text" id="custom-direction" placeholder="Введите направление">
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-fio')">← Назад</button>
+                    <button class="btn btn-primary" onclick="submitDirection()">Далее →</button>
+                </div>
+            </div>
+
+            <!-- Шаг 7: Пожелания -->
+            <div class="step" id="step-wishes">
+                <h2 class="step-title">Ваши пожелания</h2>
+                <p class="step-description">Укажите ваши пожелания по рейсу (если есть)</p>
+                
+                <div class="form-group">
+                    <label for="wishes">Пожелания</label>
+                    <textarea id="wishes" placeholder="Например: предпочтительное время вылета, номер рейса и т.д. Если пожеланий нет, поставьте прочерк (-)"></textarea>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-direction')">← Назад</button>
+                    <button class="btn btn-primary" onclick="submitWishes()">Далее →</button>
+                </div>
+            </div>
+
+            <!-- Шаг 8: Подтверждение -->
+            <div class="step" id="step-confirmation">
+                <h2 class="step-title">Подтверждение заявки</h2>
+                <p class="step-description">Проверьте данные перед отправкой</p>
+                
+                <div class="summary" id="summary">
+                    <!-- Динамически заполняется -->
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-secondary" onclick="goToStep('step-wishes')">← Назад</button>
+                    <button class="btn btn-success" onclick="confirmApplication()">✅ Подтвердить заявку</button>
+                </div>
+            </div>
+
+            <!-- Шаг 9: Успех -->
+            <div class="step" id="step-success">
+                <div class="success-message">
+                    <div class="success-icon">🎉</div>
+                    <h2>Заявка успешно отправлена!</h2>
+                    <p>Ваши данные сохранены в системе. Ожидайте подтверждения от ЦП.</p>
+                    <button class="btn btn-primary" onclick="startNewApplication()">Подать новую заявку</button>
+                </div>
+            </div>
+
+            <!-- Загрузка -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Обрабатываем ваш запрос...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let currentStep = 'step-location';
+        let currentMonth = new Date().getMonth() + 1;
+        let currentYear = new Date().getFullYear();
+        let userData = {
+            user_id: '{{ user_data.user_id }}',
+            location: null,
+            oke: null,
+            selected_date: null,
+            position: null,
+            fio: null,
+            tab_num: null,
+            direction: null,
+            wishes: null
+        };
+
+        // Словарь ОКЭ по локациям
+        const okeOptions = {
+            'МСК': ['ОКЭ 1', 'ОКЭ 2', 'ОКЭ 3', 'ОЛСиТ'],
+            'СПБ': ['ОКЭ 4', 'ОКЭ 5', 'ОЛСиТ'],
+            'Красноярск': ['ОКЭ Красноярск', 'ОЛСиТ'],
+            'Сочи': ['ОКЭ Сочи', 'ОЛСиТ']
+        };
+
+        // Словарь направлений
+        const directions = {
+            'МСК': ['Анадырь', 'Благовещенск', 'Владивосток', 'Красноярск', 'Магадан', 'Нижний Новгород', 'Самара', 'Санкт-Петербург', 'Уфа', 'Хабаровск', 'Южно-Сахалинск', 'Варадеро', 'Хургада', 'Шарм-Эль-Шейх'],
+            'СПБ': ['Волгоград', 'Красноярск', 'Москва', 'Самара', 'Сочи', 'Хургада', 'Шарм-Эль-Шейх'],
+            'Красноярск': ['Владивосток', 'Сочи', 'Южно-Сахалинск', 'Хабаровск', 'Санья'],
+            'Сочи': []
+        };
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            generateCalendar();
+        });
+
+        function setupEventListeners() {
+            // Выбор локации
+            document.querySelectorAll('[data-location]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    userData.location = this.dataset.location;
+                    this.classList.add('selected');
+                    submitLocation(userData.location);
+                });
+            });
+
+            // Выбор должности
+            document.querySelectorAll('[data-position]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    userData.position = this.dataset.position;
+                    this.classList.add('selected');
+                    submitPosition(userData.position);
+                });
+            });
+        }
+
+        function goToStep(stepId) {
+            // Скрыть текущий шаг
+            document.getElementById(currentStep).classList.remove('active');
+            
+            // Показать новый шаг
+            document.getElementById(stepId).classList.add('active');
+            currentStep = stepId;
+
+            // Заполнить данные для конкретных шагов
+            if (stepId === 'step-oke') {
+                fillOkeOptions();
+            } else if (stepId === 'step-direction') {
+                fillDirectionOptions();
+            } else if (stepId === 'step-confirmation') {
+                fillSummary();
+            }
+        }
+
+        function fillOkeOptions() {
+            const container = document.getElementById('oke-options');
+            const options = okeOptions[userData.location] || [];
+            
+            container.innerHTML = options.map(oke => 
+                `<div class="option-btn" data-oke="${oke}">${oke}</div>`
+            ).join('');
+
+            // Добавить обработчики событий
+            container.querySelectorAll('[data-oke]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    userData.oke = this.dataset.oke;
+                    this.classList.add('selected');
+                    submitOke(userData.oke);
+                });
+            });
+        }
+
+        function fillDirectionOptions() {
+            const container = document.getElementById('direction-options');
+            const options = directions[userData.location] || [];
+            
+            container.innerHTML = options.map(direction => 
+                `<div class="option-btn" data-direction="${direction}">${direction}</div>`
+            ).join('');
+
+            // Добавить обработчики событий
+            container.querySelectorAll('[data-direction]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    userData.direction = this.dataset.direction;
+                    this.classList.add('selected');
+                    // Сохранить направление на сервере и перейти к следующему шагу
+                    submitDirection();
+                });
+            });
+        }
+
+        function generateCalendar() {
+            const container = document.getElementById('calendar');
+            const monthTitle = document.getElementById('month-title');
+            
+            // Обновить заголовок месяца
+            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                              'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+            monthTitle.textContent = `${monthNames[currentMonth - 1]} ${currentYear}`;
+
+            // Заголовки дней недели
+            const dayHeaders = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            container.innerHTML = dayHeaders.map(day => 
+                `<div class="calendar-header">${day}</div>`
+            ).join('');
+
+            // Получить первый день месяца и количество дней
+            const firstDay = new Date(currentYear, currentMonth - 1, 1);
+            const lastDay = new Date(currentYear, currentMonth, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDay = (firstDay.getDay() + 6) % 7; // Понедельник = 0
+
+            // Пустые ячейки для начала месяца
+            for (let i = 0; i < startDay; i++) {
+                container.innerHTML += '<div class="calendar-day"></div>';
+            }
+
+            // Дни месяца
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(currentYear, currentMonth - 1, day);
+                const isToday = date.toDateString() === today.toDateString();
+                const isPast = date < today;
+                
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+                if (isPast) classes += ' disabled';
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = classes;
+                dayElement.textContent = day;
+                
+                if (!isPast) {
+                    dayElement.addEventListener('click', function() {
+                        // Убрать выделение с других дней
+                        container.querySelectorAll('.calendar-day').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        
+                        // Выделить выбранный день
+                        this.classList.add('selected');
+                        
+                        // Сохранить дату
+                        userData.selected_date = `${day.toString().padStart(2, '0')}.${currentMonth.toString().padStart(2, '0')}.${currentYear}`;
+                        
+                        // Отправить дату на сервер
+                        submitDate(userData.selected_date);
+                    });
+                }
+                
+                container.appendChild(dayElement);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentMonth += direction;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+            } else if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear--;
+            }
+            generateCalendar();
+        }
+
+        function submitLocation(location) {
+            // Отправить локацию на сервер
+            fetch('/api/select-location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    location: location
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Локация сохранена:', data.message);
+                    // Перейти к следующему шагу
+                    setTimeout(() => {
+                        goToStep('step-oke');
+                    }, 300);
+                } else {
+                    console.error('Ошибка при сохранении локации:', data.error);
+                    alert('Ошибка при сохранении локации: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении локации');
+            });
+        }
+
+        function submitOke(oke) {
+            // Отправить ОКЭ на сервер
+            fetch('/api/select-oke', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    oke: oke
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('ОКЭ сохранено:', data.message);
+                    // Перейти к следующему шагу
+                    setTimeout(() => {
+                        goToStep('step-date');
+                    }, 300);
+                } else {
+                    console.error('Ошибка при сохранении ОКЭ:', data.error);
+                    alert('Ошибка при сохранении ОКЭ: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении ОКЭ');
+            });
+        }
+
+        function submitPosition(position) {
+            // Отправить должность на сервер
+            fetch('/api/select-position', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    position: position
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Должность сохранена:', data.message);
+                    // Перейти к следующему шагу
+                    setTimeout(() => {
+                        goToStep('step-fio');
+                    }, 300);
+                } else {
+                    console.error('Ошибка при сохранении должности:', data.error);
+                    alert('Ошибка при сохранении должности: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении должности');
+            });
+        }
+
+        function submitDate(date) {
+            // Отправить дату на сервер
+            fetch('/api/select-date', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    date: date
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Дата сохранена:', data.message);
+                    // Перейти к следующему шагу
+                    setTimeout(() => {
+                        goToStep('step-position');
+                    }, 500);
+                } else {
+                    console.error('Ошибка при сохранении даты:', data.error);
+                    alert('Ошибка при сохранении даты: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении даты');
+            });
+        }
+
+        function submitFio() {
+            const fio = document.getElementById('fio').value.trim();
+            const tabNum = document.getElementById('tab-num').value.trim();
+            
+            if (!fio || !tabNum) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+            
+            userData.fio = fio;
+            userData.tab_num = tabNum;
+            
+            // Отправить ФИО на сервер
+            fetch('/api/input-fio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    fio: fio,
+                    tab_num: tabNum
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('ФИО сохранено:', data.message);
+                    goToStep('step-direction');
+                } else {
+                    console.error('Ошибка при сохранении ФИО:', data.error);
+                    alert('Ошибка при сохранении ФИО: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении ФИО');
+            });
+        }
+
+        function submitDirection() {
+            const customDirection = document.getElementById('custom-direction').value.trim();
+            
+            if (customDirection) {
+                userData.direction = customDirection;
+            }
+            
+            if (!userData.direction) {
+                alert('Пожалуйста, выберите или введите направление');
+                return;
+            }
+            
+            // Отправить направление на сервер
+            fetch('/api/select-direction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    direction: userData.direction
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Направление сохранено:', data.message);
+                    goToStep('step-wishes');
+                } else {
+                    console.error('Ошибка при сохранении направления:', data.error);
+                    alert('Ошибка при сохранении направления: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении направления');
+            });
+        }
+
+        function submitWishes() {
+            const wishes = document.getElementById('wishes').value.trim() || '-';
+            userData.wishes = wishes;
+            
+            // Отправить пожелания на сервер
+            fetch('/api/input-wishes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userData.user_id,
+                    wishes: wishes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Пожелания сохранены:', data.message);
+                    goToStep('step-confirmation');
+                } else {
+                    console.error('Ошибка при сохранении пожеланий:', data.error);
+                    alert('Ошибка при сохранении пожеланий: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при сохранении пожеланий');
+            });
+        }
+
+        function fillSummary() {
+            const summary = document.getElementById('summary');
+            summary.innerHTML = `
+                <div class="summary-item">
+                    <span class="summary-label">Локация:</span>
+                    <span class="summary-value">${userData.location}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">ОКЭ:</span>
+                    <span class="summary-value">${userData.oke}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Дата:</span>
+                    <span class="summary-value">${userData.selected_date}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Должность:</span>
+                    <span class="summary-value">${userData.position}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">ФИО:</span>
+                    <span class="summary-value">${userData.fio}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Табельный номер:</span>
+                    <span class="summary-value">${userData.tab_num}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Направление:</span>
+                    <span class="summary-value">${userData.direction}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Пожелания:</span>
+                    <span class="summary-value">${userData.wishes}</span>
+                </div>
+            `;
+        }
+
+        function confirmApplication() {
+            showLoading();
+            
+            // Отправить данные на сервер
+            fetch('/api/confirm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    goToStep('step-success');
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                alert('Произошла ошибка при отправке заявки');
+            });
+        }
+
+        function startNewApplication() {
+            // Сбросить данные
+            userData = {
+                user_id: userData.user_id,
+                location: null,
+                oke: null,
+                selected_date: null,
+                position: null,
+                fio: null,
+                tab_num: null,
+                direction: null,
+                wishes: null
+            };
+            
+            // Очистить формы
+            document.getElementById('fio').value = '';
+            document.getElementById('tab-num').value = '';
+            document.getElementById('custom-direction').value = '';
+            document.getElementById('wishes').value = '';
+            
+            // Убрать выделения
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Вернуться к первому шагу
+            goToStep('step-location');
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+{
+  "bot_settings": {
+    "bot_name": "Flight Booking Bot",
+    "bot_description": "Бот для подачи заявок на командировочные рейсы",
+    "api_base_url": "https://loosely-welcoming-grackle.cloudpub.ru",
+    "webhook_url": "https://loosely-welcoming-grackle.cloudpub.ru/webhook",
+    "cloudpub_url": "https://loosely-welcoming-grackle.cloudpub.ru",
+    "bot_id": "00c46d64-1127-5a96-812d-3d8b27c58b99",
+    "secret_key": "a75b4cd97d9e88e543f077178b2d5a4f"
+  },
+  "ports": {
+    "admin_server": 8082,
+    "bot_server": 5002,
+    "webhook_server": 5003,
+    "api_server": 5004,
+    "smartapp_server": 5005
+  },
+  "directions": {
+    "МСК": [
+      "Анадырь",
+      "Благовещенск",
+      "Владивосток",
+      "Красноярск",
+      "Магадан",
+      "Нижний Новгород",
+      "Самара",
+      "Санкт-Петербург",
+      "Уфа",
+      "Хабаровск",
+      "Южно-Сахалинск",
+      "Варадеро",
+      "Хургада",
+      "Шарм-Эль-Шейх"
+    ],
+    "СПБ": [
+      "Волгоград",
+      "Красноярск",
+      "Москва",
+      "Самара",
+      "Сочи",
+      "Хургада",
+      "Шарм-Эль-Шейх"
+    ],
+    "Красноярск": [
+      "Владивосток",
+      "Сочи",
+      "Южно-Сахалинск",
+      "Хабаровск",
+      "Санья"
+    ],
+    "Сочи": []
+  },
+  "oke_by_location": {
+    "МСК": [
+      "ОКЭ 1",
+      "ОКЭ 2",
+      "ОКЭ 3",
+      "ОЛСиТ"
+    ],
+    "СПБ": [
+      "ОКЭ 4",
+      "ОКЭ 5",
+      "ОЛСиТ"
+    ],
+    "Красноярск": [
+      "ОКЭ Красноярск",
+      "ОЛСиТ"
+    ],
+    "Сочи": [
+      "ОКЭ Сочи",
+      "ОЛСиТ"
+    ]
+  },
+  "positions": [
+    "БП",
+    "БП BS",
+    "СБЭ",
+    "ИПБ",
+    "Тест"
+  ],
+  "application_periods": {
+    "enabled": true,
+    "start_day": 20,
+    "end_day": 5,
+    "working_hours": {
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "exceptions": []
+  },
+  "notifications": {
+    "enabled": true,
+    "templates": {
+      "application_submitted": "Ваша заявка на рейс успешно подана!",
+      "application_reminder": "Напоминание: не забудьте подать заявку на рейс",
+      "period_opening": "Открыт прием заявок на рейсы на следующий месяц"
+    }
+  },
+  "system": {
+    "log_level": "INFO",
+    "max_log_size": "10MB",
+    "backup_enabled": true,
+    "auto_restart": false
+  }
+}

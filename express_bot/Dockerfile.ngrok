@@ -1,0 +1,41 @@
+# Express.ms Bot Dockerfile с поддержкой ngrok
+FROM python:3.12-slim
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Установка ngrok
+RUN wget -O /tmp/ngrok.zip https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip \
+    && unzip /tmp/ngrok.zip -d /usr/local/bin/ \
+    && chmod +x /usr/local/bin/ngrok \
+    && rm /tmp/ngrok.zip
+
+# Создание рабочей директории
+WORKDIR /app
+
+# Копирование requirements
+COPY requirements.txt .
+
+# Установка Python зависимостей
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование исходного кода
+COPY . .
+
+# Создание пользователя для безопасности
+RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
+USER botuser
+
+# Открытие портов
+EXPOSE 8000 4040
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Запуск приложения
+CMD ["python", "express_bot_docker.py"]
